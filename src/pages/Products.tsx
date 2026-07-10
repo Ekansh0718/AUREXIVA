@@ -1,39 +1,24 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/Container'
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { ProductCard } from '@/components/product/ProductCard'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
-import { DUMMY_PRODUCTS } from '@/constants/dummyData'
+import { useCategories, useProducts } from '@/hooks/useCatalog'
 import { motion, AnimatePresence } from 'framer-motion'
 import { staggerContainer, fadeUp } from '@/utils/animations'
 
 export const Products: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [isLoading, setIsLoading] = useState(false)
-  
+
   const categoryFilter = searchParams.get('category') || ''
   const searchFilter = searchParams.get('search') || ''
 
-  // Trigger brief simulation of loading state when filters change for demonstration
-  useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [categoryFilter, searchFilter])
-
-  const filteredProducts = DUMMY_PRODUCTS.filter((product) => {
-    const matchesCategory = categoryFilter
-      ? product.category.toLowerCase() === categoryFilter.toLowerCase()
-      : true
-    const matchesSearch = searchFilter
-      ? product.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchFilter.toLowerCase())
-      : true
-    return matchesCategory && matchesSearch
+  const { data: categories = [] } = useCategories()
+  const { data: products = [], isLoading } = useProducts({
+    categorySlug: categoryFilter || undefined,
+    search: searchFilter || undefined,
   })
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,18 +43,16 @@ export const Products: React.FC = () => {
     })
   }
 
-  const handleCategorySelect = (category: string) => {
+  const handleCategorySelect = (slug: string) => {
     setSearchParams((prev) => {
-      if (category) {
-        prev.set('category', category)
+      if (slug) {
+        prev.set('category', slug)
       } else {
         prev.delete('category')
       }
       return prev
     })
   }
-
-  const categories = ['Footwear', 'Kids Clothing', 'Electronics']
 
   return (
     <Container className="py-12 sm:py-16 text-left">
@@ -108,15 +91,15 @@ export const Products: React.FC = () => {
               </button>
               {categories.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => handleCategorySelect(cat.toLowerCase().replace(' ', '-'))}
+                  key={cat.id}
+                  onClick={() => handleCategorySelect(cat.slug)}
                   className={`text-xs text-left px-3.5 py-2 font-medium tracking-wide uppercase border transition-all duration-300 rounded-sm cursor-pointer ${
-                    categoryFilter === cat.toLowerCase().replace(' ', '-')
+                    categoryFilter === cat.slug
                       ? 'border-primary bg-primary text-white'
                       : 'border-border-custom bg-white text-secondary hover:border-primary hover:text-primary'
                   }`}
                 >
-                  {cat}
+                  {cat.name}
                 </button>
               ))}
             </div>
@@ -137,7 +120,7 @@ export const Products: React.FC = () => {
                 </div>
               ))}
             </div>
-          ) : filteredProducts.length > 0 ? (
+          ) : products.length > 0 ? (
             <motion.div
               variants={staggerContainer()}
               initial="hidden"
@@ -145,7 +128,7 @@ export const Products: React.FC = () => {
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
             >
               <AnimatePresence>
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <motion.div key={product.id} variants={fadeUp} layout>
                     <ProductCard product={product} />
                   </motion.div>

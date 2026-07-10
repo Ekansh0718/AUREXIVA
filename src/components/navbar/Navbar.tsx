@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ShoppingBag, User, Menu, X, Search } from 'lucide-react'
+import { ShoppingBag, User, Menu, X, Search, LogOut } from 'lucide-react'
 import { Container } from '@/components/common/Container'
 import { AurexivaLogo } from '@/components/common/AurexivaLogo'
 import { useScroll } from '@/hooks/useScroll'
+import { useAuth } from '@/context/AuthContext'
+import { useCart } from '@/context/CartContext'
 import { cn } from '@/utils/cn'
 
 export const Navbar: React.FC = () => {
@@ -12,6 +14,14 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const isScrolled = useScroll(10)
+  const { user, signOut } = useAuth()
+  const { totalCount } = useCart()
+
+  const handleLogout = async () => {
+    await signOut()
+    setIsMobileMenuOpen(false)
+    navigate('/')
+  }
 
   const categories = [
     { name: 'Home', path: '/' },
@@ -53,14 +63,14 @@ export const Navbar: React.FC = () => {
       <Container>
         <div className="flex items-center justify-between gap-4">
           {/* Logo Brand Mark */}
-          <div className="flex-1 md:flex-initial">
+          <div className="flex-1 lg:flex-initial">
             <Link to="/" className="inline-block transition-transform duration-300 hover:scale-[1.01]">
               <AurexivaLogo width={38} height={38} showText={true} />
             </Link>
           </div>
 
           {/* Desktop Categories Links */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-8">
             {categories.map((cat) => {
               const active = isLinkActive(cat.path)
               return (
@@ -68,9 +78,9 @@ export const Navbar: React.FC = () => {
                   key={cat.name}
                   to={cat.path}
                   className={cn(
-                    'relative py-1 text-xs font-semibold tracking-wider uppercase transition-colors duration-300 select-none after:absolute after:bottom-0 after:left-0 after:h-[2px] after:bg-primary after:transition-all after:duration-300 after:ease-out',
-                    active 
-                      ? 'text-primary after:w-full' 
+                    'relative py-1 text-xs font-semibold tracking-wider uppercase transition-colors duration-300 select-none whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:h-[2px] after:bg-primary after:transition-all after:duration-300 after:ease-out',
+                    active
+                      ? 'text-primary after:w-full'
                       : 'text-secondary hover:text-primary after:w-0 hover:after:w-full'
                   )}
                 >
@@ -81,7 +91,7 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Search, Cart, Login / Profile Actions */}
-          <div className="flex items-center justify-end gap-2 sm:gap-6 flex-1 md:flex-initial">
+          <div className="flex items-center justify-end gap-2 sm:gap-6 flex-1 lg:flex-initial">
             {/* Desktop Search Button */}
             <button
               onClick={() => navigate('/products')}
@@ -93,9 +103,9 @@ export const Navbar: React.FC = () => {
 
             {/* Profile */}
             <Link
-              to="/profile"
+              to={user ? '/profile' : '/login'}
               className="p-2 text-primary hover:text-accent transition-colors duration-200"
-              aria-label="Profile"
+              aria-label={user ? 'Profile' : 'Sign In'}
             >
               <User className="h-[20px] w-[20px]" />
             </Link>
@@ -107,15 +117,17 @@ export const Navbar: React.FC = () => {
               aria-label="Cart"
             >
               <ShoppingBag className="h-[20px] w-[20px]" />
-              <span className="absolute -top-0.5 -right-0.5 h-[16px] w-[16px] rounded-full bg-primary text-[9px] font-bold text-white flex items-center justify-center border border-white">
-                2
-              </span>
+              {totalCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-[16px] w-[16px] rounded-full bg-primary text-[9px] font-bold text-white flex items-center justify-center border border-white">
+                  {totalCount > 9 ? '9+' : totalCount}
+                </span>
+              )}
             </Link>
 
             {/* Mobile Menu Hamburger */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-primary hover:text-accent transition-colors duration-200 md:hidden cursor-pointer"
+              className="p-2 text-primary hover:text-accent transition-colors duration-200 lg:hidden cursor-pointer"
               aria-label="Toggle Menu"
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -126,7 +138,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 bg-background border-t border-border-custom animate-fadeIn md:hidden flex flex-col p-6">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 bg-background border-t border-border-custom animate-fadeIn lg:hidden flex flex-col p-6">
           {/* Mobile Search input */}
           <form onSubmit={handleSearchSubmit} className="relative w-full mb-8">
             <input
@@ -163,13 +175,32 @@ export const Navbar: React.FC = () => {
           </nav>
 
           <div className="mt-auto flex flex-col gap-4">
-            <Link
-              to="/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full text-center border border-primary py-2.5 text-xs font-semibold tracking-wider uppercase text-primary hover:bg-primary hover:text-white transition-all duration-300 rounded-sm"
-            >
-              Sign In
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full text-center border border-primary py-2.5 text-xs font-semibold tracking-wider uppercase text-primary hover:bg-primary hover:text-white transition-all duration-300 rounded-sm"
+                >
+                  My Account
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 text-xs font-semibold tracking-wider uppercase text-secondary hover:text-error transition-colors duration-300 py-2.5 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full text-center border border-primary py-2.5 text-xs font-semibold tracking-wider uppercase text-primary hover:bg-primary hover:text-white transition-all duration-300 rounded-sm"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

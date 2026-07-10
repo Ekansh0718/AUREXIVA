@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -6,8 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Container } from '@/components/common/Container'
 import { Input } from '@/components/ui/Input'
 import { PrimaryButton } from '@/components/ui/Button'
-import { DUMMY_PRODUCTS } from '@/constants/dummyData'
+import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
+import { usePayment } from '@/hooks/usePayment'
+import { createOrder } from '@/services/orders'
+import { paymentConfig } from '@/services/payment/payment.config'
 import { formatPrice } from '@/utils/format'
+import { getErrorMessage } from '@/utils/errors'
 
 const checkoutSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -15,33 +20,63 @@ const checkoutSchema = z.object({
   address: z.string().min(5, 'Address is required'),
   city: z.string().min(2, 'City is required'),
   zip: z.string().min(5, 'ZIP Code must be at least 5 characters'),
-  cardNumber: z.string().min(16, 'Card number must be 16 digits').max(16, 'Card number must be 16 digits'),
-  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, 'Expiry must be in MM/YY format'),
-  cvv: z.string().min(3, 'CVV must be 3 digits').max(3, 'CVV must be 3 digits'),
 })
 
 type CheckoutFields = z.infer<typeof checkoutSchema>
 
 export const Checkout: React.FC = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { items, subtotal } = useCart()
+  const { initiatePayment, isProcessing } = usePayment()
+  const [formError, setFormError] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<CheckoutFields>({
     resolver: zodResolver(checkoutSchema),
+    defaultValues: { email: user?.email ?? '' },
   })
 
-  // Simulated items in the bag
-  const subtotal = DUMMY_PRODUCTS[0].price + DUMMY_PRODUCTS[2].price // 220 + 350
-  const shipping = 0
-  const total = subtotal + shipping
+  const shipping = subtotal > 150 ? 0 : 15
+  const total = items.length > 0 ? subtotal + shipping : 0
+
+  useEffect(() => {
+    if (items.length === 0) navigate('/cart', { replace: true })
+  }, [items.length, navigate])
 
   const onSubmit = async (data: CheckoutFields) => {
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    alert(`Order placed successfully! Thank you for shopping with Aurexiva Products, ${data.name}.`)
-    navigate('/orders')
+    if (!user) return
+    setFormError(null)
+
+    try {
+      const order = await createOrder(
+        user.id,
+        items,
+        { fullName: data.name, email: data.email, address: data.address, city: data.city, zip: data.zip },
+        subtotal,
+        total
+      )
+
+      const payment = await initiatePayment({
+        orderId: order.id,
+        amount: total,
+        currency: paymentConfig.currency,
+        customerName: data.name,
+        customerEmail: data.email,
+      })
+
+      // For the mock provider this is our own simulated gateway route; for a
+      // real gateway it would be an external URL — either way, we just
+      // navigate to whatever the provider tells us.
+      navigate(payment.redirectUrl)
+    } catch (err) {
+      setFormError(getErrorMessage(err, 'Unable to start checkout. Please try again.'))
+    }
   }
+
+  if (items.length === 0) return null
 
   return (
     <Container className="py-12 sm:py-16 text-left">
@@ -52,6 +87,12 @@ export const Checkout: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-8 items-start">
         {/* Billing & Shipping Form */}
         <div className="lg:col-span-2 flex flex-col gap-8">
+          {formError && (
+            <p className="text-xs text-error font-medium bg-error/5 border border-error/20 rounded-sm px-3.5 py-2.5">
+              {formError}
+            </p>
+          )}
+
           {/* Customer info */}
           <section className="bg-white border border-border-custom p-6 sm:p-8 rounded-premium hover:shadow-premium transition-all duration-300">
             <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-6 select-none">
@@ -62,7 +103,7 @@ export const Checkout: React.FC = () => {
               type="email"
               placeholder="name@example.com"
               error={errors.email?.message}
-              disabled={isSubmitting}
+              disabled={isProcessing}
               {...register('email')}
             />
           </section>
@@ -77,14 +118,14 @@ export const Checkout: React.FC = () => {
                 label="Full Name"
                 placeholder="John Doe"
                 error={errors.name?.message}
-                disabled={isSubmitting}
+                disabled={isProcessing}
                 {...register('name')}
               />
               <Input
                 label="Street Address"
                 placeholder="100 Vercel Way"
                 error={errors.address?.message}
-                disabled={isSubmitting}
+                disabled={isProcessing}
                 {...register('address')}
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -92,14 +133,14 @@ export const Checkout: React.FC = () => {
                   label="City"
                   placeholder="San Francisco"
                   error={errors.city?.message}
-                  disabled={isSubmitting}
+                  disabled={isProcessing}
                   {...register('city')}
                 />
                 <Input
                   label="ZIP Code"
                   placeholder="94107"
                   error={errors.zip?.message}
-                  disabled={isSubmitting}
+                  disabled={isProcessing}
                   {...register('zip')}
                 />
               </div>
@@ -109,33 +150,12 @@ export const Checkout: React.FC = () => {
           {/* Payment */}
           <section className="bg-white border border-border-custom p-6 sm:p-8 rounded-premium hover:shadow-premium transition-all duration-300">
             <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-6 select-none">
-              Payment Information
+              Payment
             </h3>
-            <div className="flex flex-col gap-4">
-              <Input
-                label="Card Number"
-                placeholder="1234567812345678"
-                error={errors.cardNumber?.message}
-                disabled={isSubmitting}
-                {...register('cardNumber')}
-              />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Expiration Date (MM/YY)"
-                  placeholder="12/28"
-                  error={errors.expiry?.message}
-                  disabled={isSubmitting}
-                  {...register('expiry')}
-                />
-                <Input
-                  label="Security Code (CVV)"
-                  placeholder="123"
-                  error={errors.cvv?.message}
-                  disabled={isSubmitting}
-                  {...register('cvv')}
-                />
-              </div>
-            </div>
+            <p className="text-xs text-secondary leading-relaxed">
+              You'll enter your payment details on the next screen, hosted securely by our payment
+              provider — no card information is collected or stored on this page.
+            </p>
           </section>
         </div>
 
@@ -145,23 +165,18 @@ export const Checkout: React.FC = () => {
             Order Review
           </h3>
           <div className="flex flex-col gap-4 pb-6 border-b border-border-custom/50">
-            {/* Mock checkout item 1 */}
-            <div className="flex justify-between items-center text-xs text-secondary font-medium">
-              <div className="text-left">
-                <p className="font-semibold text-primary">{DUMMY_PRODUCTS[0].name}</p>
-                <p className="text-[10px] text-secondary/70">Qty 1 · Size US 10</p>
+            {items.map((item) => (
+              <div key={item.id} className="flex justify-between items-center text-xs text-secondary font-medium">
+                <div className="text-left">
+                  <p className="font-semibold text-primary">{item.product.name}</p>
+                  <p className="text-[10px] text-secondary/70">
+                    Qty {item.quantity}
+                    {item.variant ? ` · Size ${item.variant}` : ''}
+                  </p>
+                </div>
+                <span className="text-primary">{formatPrice(item.product.price * item.quantity)}</span>
               </div>
-              <span className="text-primary">{formatPrice(DUMMY_PRODUCTS[0].price)}</span>
-            </div>
-
-            {/* Mock checkout item 2 */}
-            <div className="flex justify-between items-center text-xs text-secondary font-medium">
-              <div className="text-left">
-                <p className="font-semibold text-primary">{DUMMY_PRODUCTS[2].name}</p>
-                <p className="text-[10px] text-secondary/70">Qty 1</p>
-              </div>
-              <span className="text-primary">{formatPrice(DUMMY_PRODUCTS[2].price)}</span>
-            </div>
+            ))}
           </div>
 
           <div className="flex flex-col gap-3 text-xs font-medium text-secondary mt-6">
@@ -181,10 +196,10 @@ export const Checkout: React.FC = () => {
 
           <PrimaryButton
             type="submit"
-            isLoading={isSubmitting}
+            isLoading={isProcessing}
             className="w-full mt-8"
           >
-            Confirm Order
+            Continue to Payment
           </PrimaryButton>
         </div>
       </form>

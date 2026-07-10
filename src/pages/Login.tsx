@@ -1,11 +1,12 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Container } from '@/components/common/Container'
 import { Input } from '@/components/ui/Input'
 import { PrimaryButton } from '@/components/ui/Button'
+import { supabase } from '@/lib/supabase'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -16,6 +17,8 @@ type LoginFields = z.infer<typeof loginSchema>
 
 export const Login: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [formError, setFormError] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
@@ -25,10 +28,23 @@ export const Login: React.FC = () => {
   })
 
   const onSubmit = async (data: LoginFields) => {
-    // Simulate API authorization response
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    alert(`Successfully signed in as ${data.email}`)
-    navigate('/profile')
+    setFormError(null)
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (error) {
+      setFormError(
+        error.message === 'Invalid login credentials'
+          ? 'Incorrect email or password.'
+          : error.message
+      )
+      return
+    }
+
+    const redirect = searchParams.get('redirect')
+    navigate(redirect || '/profile')
   }
 
   return (
@@ -42,6 +58,12 @@ export const Login: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          {formError && (
+            <p className="text-xs text-error font-medium bg-error/5 border border-error/20 rounded-sm px-3.5 py-2.5">
+              {formError}
+            </p>
+          )}
+
           <Input
             label="Email Address"
             type="email"
@@ -50,13 +72,13 @@ export const Login: React.FC = () => {
             disabled={isSubmitting}
             {...register('email')}
           />
-          
+
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-center mb-1 select-none">
               <span className="text-xs font-semibold tracking-wider text-primary uppercase">
                 Password
               </span>
-              <Link to="/404" className="text-xs text-secondary/80 hover:text-primary transition-colors">
+              <Link to="/forgot-password" className="text-xs text-secondary/80 hover:text-primary transition-colors">
                 Forgot password?
               </Link>
             </div>

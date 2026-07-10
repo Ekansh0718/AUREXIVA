@@ -1,39 +1,48 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Package, User, LogOut, ChevronRight } from 'lucide-react'
 import { Container } from '@/components/common/Container'
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { Badge } from '@/components/ui/Badge'
+import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { useAuth } from '@/context/AuthContext'
+import { fetchUserOrders, type OrderRecord } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
 
-export const Orders: React.FC = () => {
-  // Mock data for order history
-  const ordersMock = [
-    {
-      id: 'ORD-98716',
-      date: 'July 5, 2026',
-      status: 'shipped' as const,
-      total: 350,
-      items: [
-        { name: 'Studio Over-Ear Headphones', qty: 1 },
-      ],
-    },
-    {
-      id: 'ORD-96102',
-      date: 'June 20, 2026',
-      status: 'delivered' as const,
-      total: 220,
-      items: [
-        { name: 'Classic Leather Sneaker', qty: 1 },
-      ],
-    },
-  ]
+const statusBadge = (order: OrderRecord) => {
+  if (order.paymentStatus === 'failed') return <Badge variant="error">Payment Failed</Badge>
+  if (order.paymentStatus === 'cancelled') return <Badge variant="secondary">Cancelled</Badge>
+  if (order.paymentStatus === 'refunded') return <Badge variant="secondary">Refunded</Badge>
+  switch (order.status) {
+    case 'paid':
+      return <Badge variant="success">Paid</Badge>
+    case 'shipped':
+      return <Badge variant="accent">Shipped</Badge>
+    case 'delivered':
+      return <Badge variant="success">Delivered</Badge>
+    case 'cancelled':
+      return <Badge variant="error">Cancelled</Badge>
+    default:
+      return <Badge variant="secondary">Pending Payment</Badge>
+  }
+}
 
-  const statusBadges = {
-    shipped: <Badge variant="accent">Shipped</Badge>,
-    delivered: <Badge variant="success">Delivered</Badge>,
-    processing: <Badge variant="secondary">Processing</Badge>,
-    cancelled: <Badge variant="error">Cancelled</Badge>,
+export const Orders: React.FC = () => {
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+  const [orders, setOrders] = useState<OrderRecord[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    fetchUserOrders(user.id)
+      .then(setOrders)
+      .finally(() => setIsLoading(false))
+  }, [user])
+
+  const handleLogout = async () => {
+    await signOut()
+    navigate('/')
   }
 
   return (
@@ -58,7 +67,7 @@ export const Orders: React.FC = () => {
             Order History
           </Link>
           <button
-            onClick={() => alert('Log out clicked')}
+            onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold tracking-wide uppercase text-secondary hover:text-error hover:bg-error/5 rounded-full transition-colors duration-200 cursor-pointer text-left w-full"
           >
             <LogOut className="h-4 w-4" />
@@ -68,8 +77,10 @@ export const Orders: React.FC = () => {
 
         {/* Main Content Area */}
         <main className="lg:col-span-3 flex flex-col gap-6">
-          {ordersMock.length > 0 ? (
-            ordersMock.map((order) => (
+          {isLoading ? (
+            [...Array(2)].map((_, i) => <LoadingSkeleton key={i} className="h-28 w-full rounded-premium" />)
+          ) : orders.length > 0 ? (
+            orders.map((order) => (
               <div
                 key={order.id}
                 className="bg-white border border-border-custom p-6 rounded-premium hover:shadow-premium transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
@@ -77,16 +88,23 @@ export const Orders: React.FC = () => {
                 {/* Left side: Order Metadata */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-body font-bold text-primary">{order.id}</span>
-                    {statusBadges[order.status]}
+                    <span className="text-body font-bold text-primary">{order.id.slice(0, 8).toUpperCase()}</span>
+                    {statusBadge(order)}
                   </div>
                   <div className="text-xs text-secondary/80 font-medium">
-                    Ordered on <span className="text-primary font-semibold">{order.date}</span>
+                    Ordered on{' '}
+                    <span className="text-primary font-semibold">
+                      {new Date(order.createdAt).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
                   </div>
                   <div className="mt-2 text-xs font-medium text-secondary">
                     Items:{' '}
                     <span className="text-primary font-semibold">
-                      {order.items.map((i) => `${i.name} (x${i.qty})`).join(', ')}
+                      {order.items.map((i) => `${i.productName} (x${i.quantity})`).join(', ')}
                     </span>
                   </div>
                 </div>
@@ -98,13 +116,13 @@ export const Orders: React.FC = () => {
                     <p className="text-btn font-bold text-primary mt-0.5">{formatPrice(order.total)}</p>
                   </div>
 
-                  <button
-                    onClick={() => alert(`Showing details for ${order.id}`)}
+                  <Link
+                    to={`/order-confirmation/${order.id}`}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-accent transition-colors cursor-pointer select-none"
                   >
                     View Details
                     <ChevronRight className="h-4 w-4" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))

@@ -36,6 +36,23 @@
 
   /* Target Border Radii */
   --radius-premium: 22px;        /* 22px border radius for cards & elements */
+
+  /* shadcn/ui primitive tokens — mapped onto the brand palette above so
+     Radix-based components (Dialog, Select, Sheet, ...) inherit the same
+     look instead of shadcn's default zinc theme. */
+  --radius: 0.625rem;
+  --color-border: var(--color-border-custom);
+  --color-input: var(--color-border-custom);
+  --color-ring: var(--color-accent);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary-foreground: var(--color-primary);
+  --color-accent-foreground: #FFFFFF;
+  --color-destructive: var(--color-error);
+  --color-destructive-foreground: #FFFFFF;
+  --color-muted: var(--color-background);
+  --color-muted-foreground: var(--color-secondary);
+  --color-popover: var(--color-card);
+  --color-popover-foreground: var(--color-primary);
 }
 
 @layer base {

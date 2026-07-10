@@ -15,7 +15,8 @@ import { Container } from '@/components/common/Container'
 import { CategoryCard } from '@/components/category/CategoryCard'
 import { ProductCard } from '@/components/product/ProductCard'
 import { PrimaryButton, SecondaryButton } from '@/components/ui/Button'
-import { DUMMY_CATEGORIES, DUMMY_PRODUCTS } from '@/constants/dummyData'
+import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { useCategories, useBestSellers } from '@/hooks/useCatalog'
 import { fadeIn, fadeUp, staggerContainer } from '@/utils/animations'
 
 export const Home: React.FC = () => {
@@ -24,12 +25,15 @@ export const Home: React.FC = () => {
   // Carousel slider state for Best Sellers (mock scrolling / offset)
   const [scrollIndex, setScrollIndex] = useState(0)
 
+  const { data: categories = [], isLoading: isLoadingCategories } = useCategories()
+  const { data: bestSellers = [], isLoading: isLoadingBestSellers } = useBestSellers()
+
   const handlePrevClick = () => {
     setScrollIndex((prev) => Math.max(0, prev - 1))
   }
 
   const handleNextClick = () => {
-    setScrollIndex((prev) => Math.min(DUMMY_PRODUCTS.length - 3, prev + 1)) // Mock bounds
+    setScrollIndex((prev) => Math.min(bestSellers.length - 3, prev + 1)) // Mock bounds
   }
 
   return (
@@ -245,19 +249,27 @@ export const Home: React.FC = () => {
               View all categories <span className="text-lg">→</span>
             </Link>
           </div>
-          <motion.div
-            variants={staggerContainer()}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-[32px]"
-          >
-            {DUMMY_CATEGORIES.map((category) => (
-              <motion.div key={category.id} variants={fadeUp}>
-                <CategoryCard category={category} />
-              </motion.div>
-            ))}
-          </motion.div>
+          {isLoadingCategories ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-[32px]">
+              {[...Array(3)].map((_, i) => (
+                <LoadingSkeleton key={i} className="aspect-[4/3] w-full rounded-premium" />
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              variants={staggerContainer()}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-100px' }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-[32px]"
+            >
+              {categories.map((category) => (
+                <motion.div key={category.id} variants={fadeUp}>
+                  <CategoryCard category={category} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </Container>
       </section>
 
@@ -289,24 +301,36 @@ export const Home: React.FC = () => {
             </button>
 
             {/* Products Row - displaying 5 cards side by side */}
-            <motion.div
-              variants={staggerContainer()}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-100px' }}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[28px] transition-transform duration-500 ease-out"
-            >
-              {DUMMY_PRODUCTS.map((product) => (
-                <motion.div key={product.id} variants={fadeUp}>
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </motion.div>
+            {isLoadingBestSellers ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[28px]">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex flex-col gap-3">
+                    <LoadingSkeleton className="aspect-square w-full rounded-premium" />
+                    <LoadingSkeleton variant="text" className="h-6 w-2/3 mt-2" />
+                    <LoadingSkeleton variant="text" className="h-5 w-1/3" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                variants={staggerContainer()}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: '-100px' }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[28px] transition-transform duration-500 ease-out"
+              >
+                {bestSellers.map((product) => (
+                  <motion.div key={product.id} variants={fadeUp}>
+                    <ProductCard product={product} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
 
             {/* Right Circular Navigation Button */}
             <button
               onClick={handleNextClick}
-              disabled={scrollIndex >= DUMMY_PRODUCTS.length - 5}
+              disabled={scrollIndex >= bestSellers.length - 5}
               className={`absolute top-1/2 -right-6 z-20 -translate-y-1/2 h-12 w-12 rounded-full bg-white border border-border-custom shadow-premium flex items-center justify-center text-primary hover:bg-[#FAFAF8] active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-0 disabled:cursor-not-allowed`}
               aria-label="Next products"
             >

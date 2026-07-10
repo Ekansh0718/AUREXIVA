@@ -6,7 +6,10 @@ export interface Product {
   description: string
   image: string
   category: string
+  categorySlug: string
+  categoryId: string
   inStock: boolean
+  variants: string[]
   rating?: number
   reviewsCount?: number
   isFeatured?: boolean

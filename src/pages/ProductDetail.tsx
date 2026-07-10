@@ -4,17 +4,38 @@ import { ChevronLeft, ShieldCheck, Truck, RefreshCw } from 'lucide-react'
 import { Container } from '@/components/common/Container'
 import { PrimaryButton } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { DUMMY_PRODUCTS } from '@/constants/dummyData'
+import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { ProductCard } from '@/components/product/ProductCard'
+import { useProduct, useRelatedProducts } from '@/hooks/useCatalog'
+import { useCart } from '@/context/CartContext'
 import { formatPrice } from '@/utils/format'
 
 export const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
-  const product = DUMMY_PRODUCTS.find((p) => p.slug === slug)
-  
+  const { data: product, isLoading, isFetched } = useProduct(slug)
+  const { data: relatedProducts = [] } = useRelatedProducts(product?.categoryId, product?.id)
+  const { addItem } = useCart()
+
   const [selectedSize, setSelectedSize] = useState('')
   const [isAdding, setIsAdding] = useState(false)
 
-  if (!product) {
+  if (isLoading) {
+    return (
+      <Container className="py-8 sm:py-16 text-left">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          <LoadingSkeleton className="aspect-[4/5] w-full rounded-premium" />
+          <div className="flex flex-col gap-4">
+            <LoadingSkeleton variant="text" className="h-4 w-24" />
+            <LoadingSkeleton variant="text" className="h-10 w-2/3" />
+            <LoadingSkeleton variant="text" className="h-6 w-1/4" />
+            <LoadingSkeleton className="h-24 w-full mt-4" />
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
+  if (isFetched && !product) {
     return (
       <Container className="py-24 text-center">
         <h2 className="text-h2 font-medium text-primary">Product Not Found</h2>
@@ -26,22 +47,21 @@ export const ProductDetail: React.FC = () => {
     )
   }
 
-  const sizes = product.category === 'Footwear' 
-    ? ['US 8', 'US 9', 'US 10', 'US 11'] 
-    : product.category === 'Kids Clothing' 
-    ? '2-3Y, 4-5Y, 6-7Y, 8-9Y'.split(', ') 
-    : []
+  if (!product) return null
 
-  const handleAddToCart = () => {
+  const sizes = product.variants
+
+  const handleAddToCart = async () => {
     if (sizes.length > 0 && !selectedSize) {
       alert('Please select a size.')
       return
     }
     setIsAdding(true)
-    setTimeout(() => {
+    try {
+      await addItem(product, selectedSize || null, 1)
+    } finally {
       setIsAdding(false)
-      alert(`Added ${product.name} ${selectedSize ? `(Size: ${selectedSize})` : ''} to cart.`)
-    }, 800)
+    }
   }
 
   return (
@@ -146,6 +166,18 @@ export const ProductDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-24">
+          <h2 className="text-h2 font-bold text-primary tracking-tight mb-10">You May Also Like</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {relatedProducts.map((related) => (
+              <ProductCard key={related.id} product={related} />
+            ))}
+          </div>
+        </div>
+      )}
     </Container>
   )
 }

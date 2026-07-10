@@ -1,59 +1,43 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react'
 import { Container } from '@/components/common/Container'
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { PrimaryButton } from '@/components/ui/Button'
-import { DUMMY_PRODUCTS } from '@/constants/dummyData'
+import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { useCart } from '@/context/CartContext'
 import { formatPrice } from '@/utils/format'
 
 export const Cart: React.FC = () => {
-  // Prep-populate with a dummy product so the user sees a premium styled cart
-  const [cartItems, setCartItems] = useState([
-    {
-      product: DUMMY_PRODUCTS[0], // Classic Leather Sneaker
-      quantity: 1,
-      size: 'US 10',
-    },
-    {
-      product: DUMMY_PRODUCTS[2], // Studio Over-Ear Headphones
-      quantity: 1,
-      size: '',
-    },
-  ])
+  const { items, isLoading, updateQuantity, removeItem, subtotal } = useCart()
 
-  const updateQuantity = (index: number, delta: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((item, idx) => {
-          if (idx === index) {
-            const nextQty = item.quantity + delta
-            return { ...item, quantity: Math.max(1, nextQty) }
-          }
-          return item
-        })
+  const shipping = subtotal > 150 ? 0 : 15
+  const total = items.length > 0 ? subtotal + shipping : 0
+
+  if (isLoading) {
+    return (
+      <Container className="py-12 sm:py-16 text-left">
+        <SectionTitle title="Shopping Bag" subtitle="Review the items in your bag before proceeding to checkout." />
+        <div className="flex flex-col gap-6 mt-8">
+          {[...Array(2)].map((_, i) => (
+            <LoadingSkeleton key={i} className="h-32 w-full rounded-premium" />
+          ))}
+        </div>
+      </Container>
     )
   }
-
-  const removeItem = (index: number) => {
-    setCartItems((prev) => prev.filter((_, idx) => idx !== index))
-  }
-
-  const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
-  const shipping = subtotal > 150 ? 0 : 15
-  const total = subtotal + shipping
 
   return (
     <Container className="py-12 sm:py-16 text-left">
       <SectionTitle title="Shopping Bag" subtitle="Review the items in your bag before proceeding to checkout." />
 
-      {cartItems.length > 0 ? (
+      {items.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-8 items-start">
           {/* Cart Items List */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {cartItems.map((item, index) => (
+            {items.map((item) => (
               <div
-                key={`${item.product.id}-${item.size}`}
+                key={item.id}
                 className="flex gap-4 sm:gap-6 py-6 border-b border-border-custom first:pt-0"
               >
                 {/* Product image */}
@@ -79,9 +63,9 @@ export const Cart: React.FC = () => {
                       </p>
                     </div>
                     <p className="mt-1 text-xs text-secondary/70">{item.product.category}</p>
-                    {item.size && (
+                    {item.variant && (
                       <p className="mt-1 text-xs font-semibold text-secondary">
-                        Size: <span className="text-primary">{item.size}</span>
+                        Size: <span className="text-primary">{item.variant}</span>
                       </p>
                     )}
                   </div>
@@ -91,15 +75,16 @@ export const Cart: React.FC = () => {
                     {/* Qty controller */}
                     <div className="flex items-center border border-border-custom rounded-full">
                       <button
-                        onClick={() => updateQuantity(index, -1)}
-                        className="p-1.5 hover:bg-background text-secondary transition-colors cursor-pointer rounded-l-full"
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                        className="p-1.5 hover:bg-background text-secondary transition-colors cursor-pointer rounded-l-full disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="h-3 w-3" />
                       </button>
                       <span className="px-3 text-xs font-semibold text-primary select-none">{item.quantity}</span>
                       <button
-                        onClick={() => updateQuantity(index, 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="p-1.5 hover:bg-background text-secondary transition-colors cursor-pointer"
                         aria-label="Increase quantity"
                       >
@@ -108,7 +93,7 @@ export const Cart: React.FC = () => {
                     </div>
 
                     <button
-                      onClick={() => removeItem(index)}
+                      onClick={() => removeItem(item.id)}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-secondary hover:text-error transition-colors duration-200 cursor-pointer"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
