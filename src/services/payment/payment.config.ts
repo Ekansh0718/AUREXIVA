@@ -67,7 +67,7 @@ export const paymentConfig: PaymentConfig = {
   successUrl: readEnv(import.meta.env.VITE_PAYMENT_SUCCESS_URL, `${origin}/order-confirmation`),
   failureUrl: readEnv(import.meta.env.VITE_PAYMENT_FAILURE_URL, `${origin}/checkout`),
 
-  currency: readEnv(import.meta.env.VITE_PAYMENT_CURRENCY, 'USD'),
+  currency: readEnv(import.meta.env.VITE_PAYMENT_CURRENCY, 'INR'),
 }
 
 export const isBankProviderConfigured = (): boolean =>

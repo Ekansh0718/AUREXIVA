@@ -188,7 +188,7 @@ export const Home: React.FC = () => {
                   Free Shipping
                 </span>
                 <span className="text-[14px] text-secondary font-medium mt-1">
-                  On orders over $50
+                  On orders over ₹999
                 </span>
               </div>
             </div>

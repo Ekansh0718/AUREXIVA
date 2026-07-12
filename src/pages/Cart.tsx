@@ -11,7 +11,7 @@ import { formatPrice } from '@/utils/format'
 export const Cart: React.FC = () => {
   const { items, isLoading, updateQuantity, removeItem, subtotal } = useCart()
 
-  const shipping = subtotal > 150 ? 0 : 15
+  const shipping = subtotal > 999 ? 0 : 99
   const total = items.length > 0 ? subtotal + shipping : 0
 
   if (isLoading) {
