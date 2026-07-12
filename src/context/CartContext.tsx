@@ -27,7 +27,7 @@ const writeGuestCart = (items: CartItem[]) => {
 interface CartContextValue {
   items: CartItem[]
   isLoading: boolean
-  addItem: (product: Product, variant: string | null, quantity?: number) => Promise<void>
+  addItem: (product: Product, variant: string | null, color: string | null, quantity?: number) => Promise<void>
   updateQuantity: (itemId: string, quantity: number) => Promise<void>
   removeItem: (itemId: string) => Promise<void>
   clearCart: () => Promise<void>
@@ -58,7 +58,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (hasMergedForUser.current !== user.id) {
         const guestItems = readGuestCart()
         for (const guestItem of guestItems) {
-          await addOrIncrementCartItem(user.id, guestItem.product.id, guestItem.variant, guestItem.quantity)
+          await addOrIncrementCartItem(
+            user.id,
+            guestItem.product.id,
+            guestItem.variant,
+            guestItem.color,
+            guestItem.quantity
+          )
         }
         if (guestItems.length > 0) {
           writeGuestCart([])
@@ -74,17 +80,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     load()
   }, [user, isAuthLoading])
 
-  const addItem = async (product: Product, variant: string | null, quantity = 1) => {
+  const addItem = async (product: Product, variant: string | null, color: string | null, quantity = 1) => {
     if (!user) {
       setItems((prev) => {
-        const existingIndex = prev.findIndex((i) => i.product.id === product.id && i.variant === variant)
+        const existingIndex = prev.findIndex(
+          (i) => i.product.id === product.id && i.variant === variant && i.color === color
+        )
         let next: CartItem[]
         if (existingIndex >= 0) {
           next = prev.map((item, idx) =>
             idx === existingIndex ? { ...item, quantity: item.quantity + quantity } : item
           )
         } else {
-          next = [...prev, { id: crypto.randomUUID(), product, variant, quantity }]
+          next = [...prev, { id: crypto.randomUUID(), product, variant, color, quantity }]
         }
         writeGuestCart(next)
         return next
@@ -92,7 +100,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return
     }
 
-    await addOrIncrementCartItem(user.id, product.id, variant, quantity)
+    await addOrIncrementCartItem(user.id, product.id, variant, color, quantity)
     setItems(await fetchCartItems(user.id))
   }
 

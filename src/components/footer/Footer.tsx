@@ -17,7 +17,7 @@ export const Footer: React.FC = () => {
 
   const shopLinks = [
     { label: 'Footwear', href: '/products?category=footwear' },
-    { label: 'Kids Clothing', href: '/products?category=kids-clothing' },
+    { label: 'Clothing', href: '/products?category=clothing' },
     { label: 'Electronics', href: '/products?category=electronics' },
     { label: 'Collections', href: '/products?category=collections' },
     { label: 'Deals', href: '/products?category=deals' },

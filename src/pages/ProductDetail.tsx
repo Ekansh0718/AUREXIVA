@@ -17,6 +17,7 @@ export const ProductDetail: React.FC = () => {
   const { addItem } = useCart()
 
   const [selectedSize, setSelectedSize] = useState('')
+  const [selectedColor, setSelectedColor] = useState('')
   const [isAdding, setIsAdding] = useState(false)
 
   if (isLoading) {
@@ -50,15 +51,20 @@ export const ProductDetail: React.FC = () => {
   if (!product) return null
 
   const sizes = product.variants
+  const colors = product.colors
 
   const handleAddToCart = async () => {
     if (sizes.length > 0 && !selectedSize) {
       alert('Please select a size.')
       return
     }
+    if (colors.length > 0 && !selectedColor) {
+      alert('Please select a color.')
+      return
+    }
     setIsAdding(true)
     try {
-      await addItem(product, selectedSize || null, 1)
+      await addItem(product, selectedSize || null, selectedColor || null, 1)
     } finally {
       setIsAdding(false)
     }
@@ -135,6 +141,28 @@ export const ProductDetail: React.FC = () => {
             </div>
           )}
 
+          {/* Color Selector */}
+          {colors.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">Select Color</span>
+              <div className="flex flex-wrap gap-2.5">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`px-4 py-2.5 text-xs font-semibold tracking-wider border rounded-full transition-all duration-300 cursor-pointer ${
+                      selectedColor === color
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-border-custom bg-white text-secondary hover:border-primary hover:text-primary'
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Add to Cart Button */}
           <PrimaryButton
             size="lg"
@@ -151,7 +179,7 @@ export const ProductDetail: React.FC = () => {
             <div className="flex flex-col gap-2">
               <Truck className="h-5 w-5 text-primary/75" />
               <span className="font-bold text-primary">Free Shipping</span>
-              <span>On all orders above $150. Courier dispatch.</span>
+              <span>On all orders above ₹999. Courier dispatch.</span>
             </div>
             <div className="flex flex-col gap-2">
               <RefreshCw className="h-5 w-5 text-primary/75" />

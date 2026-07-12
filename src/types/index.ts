@@ -10,6 +10,7 @@ export interface Product {
   categoryId: string
   inStock: boolean
   variants: string[]
+  colors: string[]
   rating?: number
   reviewsCount?: number
   isFeatured?: boolean
@@ -22,11 +23,4 @@ export interface Category {
   image: string
   description?: string
   count?: number
-}
-
-export interface CartItem {
-  product: Product
-  quantity: number
-  selectedSize?: string
-  selectedColor?: string
 }

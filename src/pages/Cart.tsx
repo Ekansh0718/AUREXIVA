@@ -63,9 +63,11 @@ export const Cart: React.FC = () => {
                       </p>
                     </div>
                     <p className="mt-1 text-xs text-secondary/70">{item.product.category}</p>
-                    {item.variant && (
+                    {(item.variant || item.color) && (
                       <p className="mt-1 text-xs font-semibold text-secondary">
-                        Size: <span className="text-primary">{item.variant}</span>
+                        {item.variant && <>Size: <span className="text-primary">{item.variant}</span></>}
+                        {item.variant && item.color && ' · '}
+                        {item.color && <>Color: <span className="text-primary">{item.color}</span></>}
                       </p>
                     )}
                   </div>

@@ -26,7 +26,7 @@ export const Navbar: React.FC = () => {
   const categories = [
     { name: 'Home', path: '/' },
     { name: 'Footwear', path: '/products?category=footwear' },
-    { name: 'Kids Clothing', path: '/products?category=kids-clothing' },
+    { name: 'Clothing', path: '/products?category=clothing' },
     { name: 'Electronics', path: '/products?category=electronics' },
   ]
 

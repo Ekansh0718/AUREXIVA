@@ -16,12 +16,13 @@ interface ProductRow {
   price: number
   images: string[]
   variants: string[]
+  colors: string[]
   is_active: boolean
   category_id: string
   categories: { name: string; slug: string } | null
 }
 
-const PRODUCT_SELECT = 'id, name, slug, description, price, images, variants, is_active, category_id, categories(name, slug)'
+const PRODUCT_SELECT = 'id, name, slug, description, price, images, variants, colors, is_active, category_id, categories(name, slug)'
 
 const mapProduct = (row: ProductRow): Product => ({
   id: row.id,
@@ -35,6 +36,7 @@ const mapProduct = (row: ProductRow): Product => ({
   categoryId: row.category_id,
   inStock: row.is_active,
   variants: row.variants ?? [],
+  colors: row.colors ?? [],
 })
 
 const mapCategory = (row: CategoryRow, count: number): Category => ({

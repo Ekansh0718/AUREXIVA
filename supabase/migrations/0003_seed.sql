@@ -5,7 +5,7 @@
 
 insert into public.categories (name, slug, image_url) values
   ('Footwear', 'footwear', 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=800&auto=format&fit=crop'),
-  ('Kids Clothing', 'kids-clothing', 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=800&auto=format&fit=crop'),
+  ('Clothing', 'clothing', 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=800&auto=format&fit=crop'),
   ('Electronics', 'electronics', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop')
 on conflict (slug) do update set
   name = excluded.name,
@@ -26,7 +26,7 @@ values
     true
   ),
   (
-    (select id from public.categories where slug = 'kids-clothing'),
+    (select id from public.categories where slug = 'clothing'),
     'Essential Hoodie',
     'essential-hoodie',
     'An everyday essential. Crafted from double-brushed organic cotton and recycled polyester for exceptional warmth, durability, and standard relaxed comfort by Aurexiva.',
@@ -48,7 +48,7 @@ values
     true
   ),
   (
-    (select id from public.categories where slug = 'kids-clothing'),
+    (select id from public.categories where slug = 'clothing'),
     'Urban Backpack',
     'urban-backpack',
     'Water-resistant premium fabric, dedicated padded laptop sleeve, and ergonomic shoulder straps. Built for daily commutes and weekend travels, refined by Aurexiva.',

@@ -1,12 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import type { Product } from '@/types'
 
-const PRODUCT_SELECT = 'id, name, slug, description, price, images, variants, is_active, category_id, categories(name, slug)'
+const PRODUCT_SELECT = 'id, name, slug, description, price, images, variants, colors, is_active, category_id, categories(name, slug)'
 
 interface CartRow {
   id: string
   quantity: number
   variant: string | null
+  color: string | null
   products: {
     id: string
     name: string
@@ -15,6 +16,7 @@ interface CartRow {
     price: number
     images: string[]
     variants: string[]
+    colors: string[]
     is_active: boolean
     category_id: string
     categories: { name: string; slug: string } | null
@@ -25,6 +27,7 @@ export interface CartItem {
   id: string
   product: Product
   variant: string | null
+  color: string | null
   quantity: number
 }
 
@@ -34,6 +37,7 @@ const mapCartRow = (row: CartRow): CartItem | null => {
   return {
     id: row.id,
     variant: row.variant,
+    color: row.color,
     quantity: row.quantity,
     product: {
       id: p.id,
@@ -47,6 +51,7 @@ const mapCartRow = (row: CartRow): CartItem | null => {
       categoryId: p.category_id,
       inStock: p.is_active,
       variants: p.variants ?? [],
+      colors: p.colors ?? [],
     },
   }
 }
@@ -54,7 +59,7 @@ const mapCartRow = (row: CartRow): CartItem | null => {
 export const fetchCartItems = async (userId: string): Promise<CartItem[]> => {
   const { data, error } = await supabase
     .from('cart_items')
-    .select(`id, quantity, variant, products (${PRODUCT_SELECT})`)
+    .select(`id, quantity, variant, color, products (${PRODUCT_SELECT})`)
     .eq('user_id', userId)
 
   if (error) throw error
@@ -67,6 +72,7 @@ export const addOrIncrementCartItem = async (
   userId: string,
   productId: string,
   variant: string | null,
+  color: string | null,
   quantity: number
 ): Promise<void> => {
   let existing = supabase
@@ -76,6 +82,7 @@ export const addOrIncrementCartItem = async (
     .eq('product_id', productId)
 
   existing = variant ? existing.eq('variant', variant) : existing.is('variant', null)
+  existing = color ? existing.eq('color', color) : existing.is('color', null)
 
   const { data: existingRow, error: fetchError } = await existing.maybeSingle()
   if (fetchError) throw fetchError
@@ -91,7 +98,7 @@ export const addOrIncrementCartItem = async (
 
   const { error } = await supabase
     .from('cart_items')
-    .insert({ user_id: userId, product_id: productId, variant, quantity })
+    .insert({ user_id: userId, product_id: productId, variant, color, quantity })
   if (error) throw error
 }
 

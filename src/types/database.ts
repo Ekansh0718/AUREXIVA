@@ -44,6 +44,7 @@ export interface Database {
           price: number;
           images: string[];
           variants: string[];
+          colors: string[];
           is_best_seller: boolean;
           is_active: boolean;
           created_at: string;
@@ -72,6 +73,7 @@ export interface Database {
           user_id: string;
           product_id: string;
           variant: string | null;
+          color: string | null;
           quantity: number;
           created_at: string;
           updated_at: string;
@@ -123,6 +125,7 @@ export interface Database {
           product_id: string | null;
           product_name: string;
           variant: string | null;
+          color: string | null;
           unit_price: number;
           quantity: number;
           created_at: string;

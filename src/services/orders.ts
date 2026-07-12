@@ -16,6 +16,7 @@ export interface OrderItemRecord {
   productId: string | null
   productName: string
   variant: string | null
+  color: string | null
   unitPrice: number
   quantity: number
 }
@@ -52,6 +53,7 @@ interface OrderItemRow {
   product_id: string | null;
   product_name: string;
   variant: string | null;
+  color: string | null;
   unit_price: number;
   quantity: number;
 }
@@ -61,6 +63,7 @@ const mapOrderItem = (row: OrderItemRow): OrderItemRecord => ({
   productId: row.product_id,
   productName: row.product_name,
   variant: row.variant,
+  color: row.color,
   unitPrice: row.unit_price,
   quantity: row.quantity,
 })
@@ -110,11 +113,12 @@ export const createOrder = async (
         product_id: item.product.id,
         product_name: item.product.name,
         variant: item.variant,
+        color: item.color,
         unit_price: item.product.price,
         quantity: item.quantity,
       }))
     )
-    .select('id, product_id, product_name, variant, unit_price, quantity')
+    .select('id, product_id, product_name, variant, color, unit_price, quantity')
 
   if (itemsError) throw itemsError
 
@@ -158,7 +162,7 @@ export const getOrder = async (orderId: string): Promise<OrderRecord | null> => 
 
   const { data: items, error: itemsError } = await supabase
     .from('order_items')
-    .select('id, product_id, product_name, variant, unit_price, quantity')
+    .select('id, product_id, product_name, variant, color, unit_price, quantity')
     .eq('order_id', orderId)
 
   if (itemsError) throw itemsError
@@ -179,7 +183,7 @@ export const fetchUserOrders = async (userId: string): Promise<OrderRecord[]> =>
 
   const { data: items, error: itemsError } = await supabase
     .from('order_items')
-    .select('id, order_id, product_id, product_name, variant, unit_price, quantity')
+    .select('id, order_id, product_id, product_name, variant, color, unit_price, quantity')
     .in('order_id', orderRows.map((o) => o.id))
 
   if (itemsError) throw itemsError

@@ -172,6 +172,7 @@ export const Checkout: React.FC = () => {
                   <p className="text-[10px] text-secondary/70">
                     Qty {item.quantity}
                     {item.variant ? ` · Size ${item.variant}` : ''}
+                    {item.color ? ` · Color ${item.color}` : ''}
                   </p>
                 </div>
                 <span className="text-primary">{formatPrice(item.product.price * item.quantity)}</span>

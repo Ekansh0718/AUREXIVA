@@ -77,7 +77,7 @@ export const Home: React.FC = () => {
                     Shop Now <span className="ml-2">→</span>
                   </PrimaryButton>
                 </Link>
-                <Link to="/products?category=kids-clothing">
+                <Link to="/products?category=clothing">
                   <SecondaryButton size="lg">
                     Explore Collections
                   </SecondaryButton>
