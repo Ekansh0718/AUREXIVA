@@ -54,6 +54,7 @@ export const Navbar: React.FC = () => {
   }
 
   return (
+    <>
     <header
       className={cn(
         'sticky top-0 z-50 w-full transition-all duration-300 bg-primary/95 backdrop-blur-md h-[68px] flex items-center border-b',
@@ -134,8 +135,12 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       </Container>
+    </header>
 
-      {/* Mobile Drawer Overlay */}
+      {/* Mobile Drawer Overlay — rendered outside <header> deliberately: the
+          header's backdrop-blur creates a new containing block for
+          position:fixed descendants, which would confine this drawer's
+          `bottom-0` to the header's own height instead of the viewport. */}
       {isMobileMenuOpen && (
         <div className="fixed inset-x-0 top-[68px] bottom-0 z-40 bg-primary border-t border-white/10 animate-fadeIn lg:hidden flex flex-col p-6">
           {/* Mobile Search input */}
@@ -203,6 +208,6 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
-    </header>
+    </>
   )
 }
