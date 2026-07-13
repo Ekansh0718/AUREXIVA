@@ -56,7 +56,7 @@ export const Navbar: React.FC = () => {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 w-full transition-all duration-300 bg-primary/95 backdrop-blur-md h-[96px] flex items-center border-b',
+        'sticky top-0 z-50 w-full transition-all duration-300 bg-primary/95 backdrop-blur-md h-[68px] flex items-center border-b',
         isScrolled ? 'border-white/15' : 'border-white/[0.07]'
       )}
     >
@@ -95,7 +95,7 @@ export const Navbar: React.FC = () => {
             to="/"
             className="hidden lg:inline-flex justify-self-center transition-opacity duration-300 hover:opacity-80"
           >
-            <AurexivaLogo iconClassName="h-9" textClassName="text-[16px]" />
+            <AurexivaLogo iconClassName="h-7" textClassName="text-[14px]" />
           </Link>
 
           {/* Right: Search, Cart, Login / Profile Actions */}
@@ -103,7 +103,7 @@ export const Navbar: React.FC = () => {
             {/* Desktop Search Button */}
             <button
               onClick={() => navigate('/products')}
-              className="p-2.5 text-white/60 hover:text-accent transition-colors duration-200 cursor-pointer"
+              className="p-2 text-white/60 hover:text-accent transition-colors duration-200 cursor-pointer"
               aria-label="Search Catalog"
             >
               <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
@@ -112,7 +112,7 @@ export const Navbar: React.FC = () => {
             {/* Profile */}
             <Link
               to={user ? '/profile' : '/login'}
-              className="p-2.5 text-white/60 hover:text-accent transition-colors duration-200"
+              className="p-2 text-white/60 hover:text-accent transition-colors duration-200"
               aria-label={user ? 'Profile' : 'Sign In'}
             >
               <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
@@ -121,7 +121,7 @@ export const Navbar: React.FC = () => {
             {/* Cart Link with Badge */}
             <Link
               to="/cart"
-              className="p-2.5 text-white/60 hover:text-accent transition-colors duration-200 relative"
+              className="p-2 text-white/60 hover:text-accent transition-colors duration-200 relative"
               aria-label="Cart"
             >
               <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
@@ -135,7 +135,7 @@ export const Navbar: React.FC = () => {
             {/* Mobile Menu Hamburger */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2.5 text-white/60 hover:text-accent transition-colors duration-200 lg:hidden cursor-pointer"
+              className="p-2 text-white/60 hover:text-accent transition-colors duration-200 lg:hidden cursor-pointer"
               aria-label="Toggle Menu"
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
@@ -146,7 +146,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-x-0 top-[96px] bottom-0 z-40 bg-primary border-t border-white/10 animate-fadeIn lg:hidden flex flex-col p-6">
+        <div className="fixed inset-x-0 top-[68px] bottom-0 z-40 bg-primary border-t border-white/10 animate-fadeIn lg:hidden flex flex-col p-6">
           {/* Mobile Search input */}
           <form onSubmit={handleSearchSubmit} className="relative w-full mb-8">
             <input
