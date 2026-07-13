@@ -1,19 +1,34 @@
 import React from 'react'
+import { cn } from '@/utils/cn'
 
 interface AurexivaLogoProps {
   className?: string
-  /** Height in pixels; width scales automatically to preserve aspect ratio. */
-  height?: number
+  iconClassName?: string
+  textClassName?: string
 }
 
-export const AurexivaLogo: React.FC<AurexivaLogoProps> = ({ className, height = 44 }) => {
+/**
+ * Icon + real (non-rasterized) wordmark, not the flattened logo-with-text
+ * artwork — that image's text portion is a small fraction of its height, so
+ * it turns to illegible noise at any UI-appropriate size. This stays crisp
+ * at any scale and lets the wordmark's color/weight be styled per-context.
+ */
+export const AurexivaLogo: React.FC<AurexivaLogoProps> = ({ className, iconClassName, textClassName }) => {
   return (
-    <img
-      src="/aurexiva-logo.png"
-      alt="AUREXIVA Product"
-      height={height}
-      className={`w-auto object-contain select-none ${className || ''}`}
-      style={{ height }}
-    />
+    <span className={cn('inline-flex items-center gap-2.5 select-none', className)}>
+      <img
+        src="/logo-mark.png"
+        alt="AUREXIVA"
+        className={cn('h-8 w-auto object-contain', iconClassName)}
+      />
+      <span
+        className={cn(
+          'font-sans font-medium tracking-[0.26em] uppercase text-white text-[15px] leading-none whitespace-nowrap',
+          textClassName
+        )}
+      >
+        Aurexiva
+      </span>
+    </span>
   )
 }

@@ -52,7 +52,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-col gap-6 lg:col-span-1.5">
             <div>
               <Link to="/">
-                <AurexivaLogo height={56} />
+                <AurexivaLogo iconClassName="h-10" textClassName="text-[17px]" />
               </Link>
               <p className="mt-5 text-[16px] text-white/70 max-w-xs leading-relaxed">
                 Everything you need. All in one place.

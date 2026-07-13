@@ -38,8 +38,8 @@ export const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col bg-background">
-      {/* 2. Hero Section (Height: calc(100vh - 88px)) */}
-      <section className="relative w-full bg-white border-b border-border-custom overflow-hidden lg:h-[calc(100vh-88px)] flex items-center py-8 lg:py-0">
+      {/* 2. Hero Section (Height: calc(100vh - 96px)) */}
+      <section className="relative w-full bg-white border-b border-border-custom overflow-hidden lg:h-[calc(100vh-96px)] flex items-center py-8 lg:py-0">
         <Container className="h-full flex items-center">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center h-full w-full">
             {/* Left Column */}
