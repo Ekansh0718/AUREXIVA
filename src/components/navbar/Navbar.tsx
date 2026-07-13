@@ -61,85 +61,76 @@ export const Navbar: React.FC = () => {
       )}
     >
       <Container>
-        <div className="grid grid-cols-[1fr_auto_1fr] lg:grid-cols-3 items-center gap-4">
-          {/* Left: Desktop Categories Links */}
-          <nav className="hidden lg:flex items-center gap-9 justify-self-start">
-            {categories.map((cat) => {
-              const active = isLinkActive(cat.path)
-              return (
-                <Link
-                  key={cat.name}
-                  to={cat.path}
-                  className={cn(
-                    'relative py-1 text-[11px] font-medium tracking-[0.16em] uppercase transition-colors duration-300 select-none whitespace-nowrap after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-300 after:ease-out',
-                    active
-                      ? 'text-white after:w-full'
-                      : 'text-white/50 hover:text-white after:w-0 hover:after:w-full'
-                  )}
-                >
-                  {cat.name}
-                </Link>
-              )
-            })}
-          </nav>
-
-          {/* Mobile: Logo sits left */}
-          <div className="justify-self-start lg:hidden">
-            <Link to="/" className="inline-flex transition-opacity duration-300 hover:opacity-80">
-              <AurexivaLogo />
-            </Link>
-          </div>
-
-          {/* Center: Logo (desktop) */}
-          <Link
-            to="/"
-            className="hidden lg:inline-flex justify-self-center transition-opacity duration-300 hover:opacity-80"
-          >
+        <div className="flex items-center justify-between gap-6">
+          {/* Left: Logo */}
+          <Link to="/" className="inline-flex shrink-0 transition-opacity duration-300 hover:opacity-80">
             <AurexivaLogo iconClassName="h-7" textClassName="text-[14px]" />
           </Link>
 
-          {/* Right: Search, Cart, Login / Profile Actions */}
-          <div className="flex items-center justify-end gap-1 sm:gap-5 justify-self-end">
-            {/* Desktop Search Button */}
-            <button
-              onClick={() => navigate('/products')}
-              className="p-2 text-white/60 hover:text-accent transition-colors duration-200 cursor-pointer"
-              aria-label="Search Catalog"
-            >
-              <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
-            </button>
+          {/* Right: Category Links + Search, Cart, Login / Profile Actions */}
+          <div className="flex items-center gap-8 xl:gap-10">
+            <nav className="hidden lg:flex items-center gap-8 xl:gap-9">
+              {categories.map((cat) => {
+                const active = isLinkActive(cat.path)
+                return (
+                  <Link
+                    key={cat.name}
+                    to={cat.path}
+                    className={cn(
+                      'relative py-1 text-[11px] font-medium tracking-[0.16em] uppercase transition-colors duration-300 select-none whitespace-nowrap after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-300 after:ease-out',
+                      active
+                        ? 'text-white after:w-full'
+                        : 'text-white/50 hover:text-white after:w-0 hover:after:w-full'
+                    )}
+                  >
+                    {cat.name}
+                  </Link>
+                )
+              })}
+            </nav>
 
-            {/* Profile */}
-            <Link
-              to={user ? '/profile' : '/login'}
-              className="p-2 text-white/60 hover:text-accent transition-colors duration-200"
-              aria-label={user ? 'Profile' : 'Sign In'}
-            >
-              <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
-            </Link>
+            <div className="flex items-center gap-1 sm:gap-5">
+              {/* Desktop Search Button */}
+              <button
+                onClick={() => navigate('/products')}
+                className="p-2 text-white/60 hover:text-accent transition-colors duration-200 cursor-pointer"
+                aria-label="Search Catalog"
+              >
+                <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
+              </button>
 
-            {/* Cart Link with Badge */}
-            <Link
-              to="/cart"
-              className="p-2 text-white/60 hover:text-accent transition-colors duration-200 relative"
-              aria-label="Cart"
-            >
-              <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
-              {totalCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 h-[15px] w-[15px] rounded-full bg-accent text-[9px] font-semibold text-primary flex items-center justify-center">
-                  {totalCount > 9 ? '9+' : totalCount}
-                </span>
-              )}
-            </Link>
+              {/* Profile */}
+              <Link
+                to={user ? '/profile' : '/login'}
+                className="p-2 text-white/60 hover:text-accent transition-colors duration-200"
+                aria-label={user ? 'Profile' : 'Sign In'}
+              >
+                <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
+              </Link>
 
-            {/* Mobile Menu Hamburger */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-white/60 hover:text-accent transition-colors duration-200 lg:hidden cursor-pointer"
-              aria-label="Toggle Menu"
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
-            </button>
+              {/* Cart Link with Badge */}
+              <Link
+                to="/cart"
+                className="p-2 text-white/60 hover:text-accent transition-colors duration-200 relative"
+                aria-label="Cart"
+              >
+                <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                {totalCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 h-[15px] w-[15px] rounded-full bg-accent text-[9px] font-semibold text-primary flex items-center justify-center">
+                    {totalCount > 9 ? '9+' : totalCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Mobile Menu Hamburger */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-white/60 hover:text-accent transition-colors duration-200 lg:hidden cursor-pointer"
+                aria-label="Toggle Menu"
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
+              </button>
+            </div>
           </div>
         </div>
       </Container>
