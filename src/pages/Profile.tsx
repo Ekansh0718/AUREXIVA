@@ -1,9 +1,29 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { User, MapPin, Package, CreditCard, LogOut } from 'lucide-react'
 import { Container } from '@/components/common/Container'
 import { SectionTitle } from '@/components/common/SectionTitle'
+import { Input } from '@/components/ui/Input'
+import { PrimaryButton, SecondaryButton } from '@/components/ui/Button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
+
+interface AddressFields {
+  line1: string
+  line2: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+}
+
+const EMPTY_ADDRESS: AddressFields = { line1: '', line2: '', city: '', state: '', postal_code: '', country: '' }
 
 const formatAddress = (address: Record<string, unknown> | null): string | null => {
   if (!address) return null
@@ -12,12 +32,37 @@ const formatAddress = (address: Record<string, unknown> | null): string | null =
 }
 
 export const Profile: React.FC = () => {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, refreshProfile } = useAuth()
   const navigate = useNavigate()
+  const [isEditingAddress, setIsEditingAddress] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [addressForm, setAddressForm] = useState<AddressFields>(EMPTY_ADDRESS)
 
   const handleLogout = async () => {
     await signOut()
     navigate('/')
+  }
+
+  const openAddressEditor = () => {
+    const existing = (profile?.default_address as Partial<AddressFields> | null) ?? {}
+    setAddressForm({ ...EMPTY_ADDRESS, ...existing })
+    setIsEditingAddress(true)
+  }
+
+  const handleSaveAddress = async () => {
+    if (!user) return
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ default_address: addressForm as unknown as Record<string, unknown> })
+        .eq('id', user.id)
+      if (error) throw error
+      await refreshProfile()
+      setIsEditingAddress(false)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const fullName = profile?.full_name || (user?.user_metadata?.full_name as string | undefined) || 'Member'
@@ -92,7 +137,7 @@ export const Profile: React.FC = () => {
                 Default Shipping Address
               </h3>
               <button
-                onClick={() => alert('Address editing ships with Checkout in Day 6')}
+                onClick={openAddressEditor}
                 className="text-xs font-semibold text-accent underline hover:text-accent/80 transition-colors cursor-pointer"
               >
                 Edit
@@ -122,6 +167,58 @@ export const Profile: React.FC = () => {
           </section>
         </main>
       </div>
+
+      <Dialog open={isEditingAddress} onOpenChange={setIsEditingAddress}>
+        <DialogContent className="rounded-premium">
+          <DialogHeader>
+            <DialogTitle>Edit Default Shipping Address</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 mt-2">
+            <Input
+              label="Address Line 1"
+              value={addressForm.line1}
+              onChange={(e) => setAddressForm((f) => ({ ...f, line1: e.target.value }))}
+            />
+            <Input
+              label="Address Line 2 (optional)"
+              value={addressForm.line2}
+              onChange={(e) => setAddressForm((f) => ({ ...f, line2: e.target.value }))}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="City"
+                value={addressForm.city}
+                onChange={(e) => setAddressForm((f) => ({ ...f, city: e.target.value }))}
+              />
+              <Input
+                label="State"
+                value={addressForm.state}
+                onChange={(e) => setAddressForm((f) => ({ ...f, state: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Postal Code"
+                value={addressForm.postal_code}
+                onChange={(e) => setAddressForm((f) => ({ ...f, postal_code: e.target.value }))}
+              />
+              <Input
+                label="Country"
+                value={addressForm.country}
+                onChange={(e) => setAddressForm((f) => ({ ...f, country: e.target.value }))}
+              />
+            </div>
+            <div className="flex gap-3 mt-2">
+              <SecondaryButton className="flex-1" onClick={() => setIsEditingAddress(false)}>
+                Cancel
+              </SecondaryButton>
+              <PrimaryButton className="flex-1" isLoading={isSaving} onClick={handleSaveAddress}>
+                Save Address
+              </PrimaryButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Container>
   )
 }

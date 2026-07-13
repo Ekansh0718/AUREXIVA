@@ -53,7 +53,7 @@ export const Home: React.FC = () => {
                 variants={fadeIn}
                 className="text-[12px] font-semibold uppercase tracking-[0.32em] text-accent select-none"
               >
-                Limited Time Offer
+                Now Open
               </motion.span>
               <motion.h1
                 variants={fadeUp}
@@ -84,41 +84,20 @@ export const Home: React.FC = () => {
                 </Link>
               </motion.div>
 
-              {/* Customer Rating Panel */}
-              <motion.div 
+              {/* Trust Panel */}
+              <motion.div
                 variants={fadeUp}
-                className="flex items-center gap-4 mt-4 select-none"
+                className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 select-none text-xs font-semibold text-secondary"
               >
-                <div className="flex -space-x-3.5">
-                  <img
-                    className="h-10 w-10 rounded-full border-2 border-white object-cover"
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop"
-                    alt="User 1"
-                  />
-                  <img
-                    className="h-10 w-10 rounded-full border-2 border-white object-cover"
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop"
-                    alt="User 2"
-                  />
-                  <img
-                    className="h-10 w-10 rounded-full border-2 border-white object-cover"
-                    src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=100&auto=format&fit=crop"
-                    alt="User 3"
-                  />
-                </div>
-                <div className="flex flex-col gap-0.5 text-xs">
-                  <span className="font-semibold text-secondary">
-                    Trusted by 10,000+ customers
-                  </span>
-                  <div className="flex items-center gap-1.5 font-medium text-primary">
-                    <div className="flex text-amber-400">
-                      {'★★★★★'.split('').map((char, index) => (
-                        <span key={index}>{char}</span>
-                      ))}
-                    </div>
-                    <span>4.8/5</span>
-                  </div>
-                </div>
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-primary" /> Secure Checkout
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-4 w-4 text-primary" /> Fast Dispatch
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Star className="h-4 w-4 text-primary" /> Premium Quality
+                </span>
               </motion.div>
             </motion.div>
 
@@ -147,7 +126,7 @@ export const Home: React.FC = () => {
                       New Arrivals
                     </span>
                     <span className="text-[13px] text-secondary font-medium mt-0.5 truncate">
-                      Summer Collection '24
+                      Shop the latest drop
                     </span>
                   </div>
                   <ArrowRight className="h-4 w-4 text-primary shrink-0" />
@@ -348,17 +327,17 @@ export const Home: React.FC = () => {
               {/* Left Content */}
               <div className="flex flex-col items-start text-left gap-4 sm:gap-6 z-10 max-w-md">
                 <span className="text-[12px] font-semibold uppercase tracking-[0.32em] text-accent select-none">
-                  Exclusive Deals
+                  New This Season
                 </span>
                 <h2 className="text-[42px] sm:text-[48px] font-bold tracking-tight text-white leading-tight">
-                  Up to 50% Off On Selected Items
+                  Discover the Full Collection
                 </h2>
-                <button
-                  onClick={() => alert('Shop Deals clicked')}
-                  className="mt-4 px-[34px] py-[16px] bg-white text-primary text-[16px] font-semibold uppercase tracking-wider rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-out cursor-pointer shadow-sm"
+                <Link
+                  to="/products"
+                  className="mt-4 inline-flex px-[34px] py-[16px] bg-white text-primary text-[16px] font-semibold uppercase tracking-wider rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-out cursor-pointer shadow-sm"
                 >
-                  Shop Deals <span className="ml-1">→</span>
-                </button>
+                  Shop Now <span className="ml-1">→</span>
+                </Link>
               </div>
 
               {/* Right Content: Bags Image & Circular Badge */}
@@ -374,10 +353,10 @@ export const Home: React.FC = () => {
                 {/* Elegant Circular Badge */}
                 <div className="absolute top-6 left-6 lg:left-12 h-[110px] w-[110px] rounded-full border border-white/30 bg-primary/80 backdrop-blur-[2px] flex items-center justify-center flex-col select-none rotate-12 shadow-lg animate-pulse-slow">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-accent">
-                    Limited
+                    New
                   </span>
                   <span className="text-[12px] font-bold text-white uppercase tracking-widest mt-0.5">
-                    Time Only
+                    Arrivals
                   </span>
                 </div>
               </div>

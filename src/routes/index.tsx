@@ -14,6 +14,8 @@ import { Checkout } from '@/pages/Checkout'
 import { MockPaymentGateway } from '@/pages/payment/MockPaymentGateway'
 import { PaymentCallback } from '@/pages/payment/PaymentCallback'
 import { OrderConfirmation } from '@/pages/OrderConfirmation'
+import { PrivacyPolicy } from '@/pages/policies/PrivacyPolicy'
+import { TermsOfService } from '@/pages/policies/TermsOfService'
 import { NotFound } from '@/pages/NotFound'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -70,6 +72,8 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      { path: 'policies/privacy', element: <PrivacyPolicy /> },
+      { path: 'policies/terms', element: <TermsOfService /> },
       { path: '*', element: <NotFound /> },
     ],
   },
