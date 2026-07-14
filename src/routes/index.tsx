@@ -16,6 +16,7 @@ import { PaymentCallback } from '@/pages/payment/PaymentCallback'
 import { OrderConfirmation } from '@/pages/OrderConfirmation'
 import { PrivacyPolicy } from '@/pages/policies/PrivacyPolicy'
 import { TermsOfService } from '@/pages/policies/TermsOfService'
+import { AddProducts } from '@/pages/internal/AddProducts'
 import { NotFound } from '@/pages/NotFound'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -74,6 +75,14 @@ export const router = createBrowserRouter([
       },
       { path: 'policies/privacy', element: <PrivacyPolicy /> },
       { path: 'policies/terms', element: <TermsOfService /> },
+      {
+        path: 'internal/add-products',
+        element: (
+          <ProtectedRoute>
+            <AddProducts />
+          </ProtectedRoute>
+        ),
+      },
       { path: '*', element: <NotFound /> },
     ],
   },

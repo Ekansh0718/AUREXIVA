@@ -6,6 +6,7 @@ interface Profile {
   id: string
   full_name: string | null
   default_address: Record<string, unknown> | null
+  is_admin: boolean
 }
 
 interface AuthContextValue {
@@ -28,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, full_name, default_address')
+      .select('id, full_name, default_address, is_admin')
       .eq('id', userId)
       .single()
     setProfile(data ?? null)
