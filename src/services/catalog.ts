@@ -31,6 +31,7 @@ const mapProduct = (row: ProductRow): Product => ({
   price: row.price,
   description: row.description ?? '',
   image: row.images[0] ?? '',
+  images: row.images ?? [],
   category: row.categories?.name ?? '',
   categorySlug: row.categories?.slug ?? '',
   categoryId: row.category_id,

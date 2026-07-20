@@ -46,6 +46,7 @@ const mapCartRow = (row: CartRow): CartItem | null => {
       price: p.price,
       description: p.description ?? '',
       image: p.images[0] ?? '',
+      images: p.images ?? [],
       category: p.categories?.name ?? '',
       categorySlug: p.categories?.slug ?? '',
       categoryId: p.category_id,

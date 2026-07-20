@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ChevronLeft, ShieldCheck, Truck, RefreshCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ShieldCheck, Truck, RefreshCw } from 'lucide-react'
 import { Container } from '@/components/common/Container'
 import { PrimaryButton } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -19,6 +19,11 @@ export const ProductDetail: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
   const [isAdding, setIsAdding] = useState(false)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  useEffect(() => {
+    setActiveImageIndex(0)
+  }, [product?.id])
 
   if (isLoading) {
     return (
@@ -52,6 +57,11 @@ export const ProductDetail: React.FC = () => {
 
   const sizes = product.variants
   const colors = product.colors
+  const galleryImages = product.images.length > 0 ? product.images : [product.image]
+
+  const goToImage = (index: number) => {
+    setActiveImageIndex((index + galleryImages.length) % galleryImages.length)
+  }
 
   const handleAddToCart = async () => {
     if (sizes.length > 0 && !selectedSize) {
@@ -82,16 +92,66 @@ export const ProductDetail: React.FC = () => {
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-        {/* Left Column: Image */}
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-background border border-border-custom rounded-premium">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-full w-full object-cover object-center"
-          />
-          {!product.inStock && (
-            <div className="absolute inset-0 bg-background/50 flex items-center justify-center backdrop-blur-[1px] rounded-premium">
-              <Badge variant="secondary" outline>Sold Out</Badge>
+        {/* Left Column: Image Gallery */}
+        <div className="flex flex-col gap-3">
+          <div className="relative aspect-[4/5] w-full overflow-hidden bg-background border border-border-custom rounded-premium group">
+            <img
+              src={galleryImages[activeImageIndex]}
+              alt={`${product.name} — image ${activeImageIndex + 1}`}
+              className="h-full w-full object-cover object-center"
+            />
+            {!product.inStock && (
+              <div className="absolute inset-0 bg-background/50 flex items-center justify-center backdrop-blur-[1px] rounded-premium">
+                <Badge variant="secondary" outline>Sold Out</Badge>
+              </div>
+            )}
+
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  onClick={() => goToImage(activeImageIndex - 1)}
+                  aria-label="Previous image"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 border border-border-custom flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer hover:bg-white"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => goToImage(activeImageIndex + 1)}
+                  aria-label="Next image"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 border border-border-custom flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer hover:bg-white"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 select-none">
+                  {galleryImages.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => goToImage(i)}
+                      aria-label={`Go to image ${i + 1}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                        i === activeImageIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/60 hover:bg-white/80'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {galleryImages.length > 1 && (
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
+              {galleryImages.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => goToImage(i)}
+                  aria-label={`Show image ${i + 1}`}
+                  className={`relative shrink-0 h-16 w-16 sm:h-20 sm:w-20 rounded-sm overflow-hidden border transition-all duration-300 cursor-pointer ${
+                    i === activeImageIndex ? 'border-primary' : 'border-border-custom hover:border-secondary'
+                  }`}
+                >
+                  <img src={img} alt={`${product.name} thumbnail ${i + 1}`} className="h-full w-full object-cover object-center" />
+                </button>
+              ))}
             </div>
           )}
         </div>

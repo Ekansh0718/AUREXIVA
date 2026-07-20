@@ -229,6 +229,29 @@ export const AddProducts: React.FC = () => {
                 placeholder="https://.../photo1.jpg"
                 className="flex w-full border border-border-custom bg-white px-3.5 py-2.5 text-body rounded-sm focus:outline-none focus:border-primary resize-y"
               />
+              {parseList(row.images).length > 0 && (
+                <div className="flex gap-2 flex-wrap mt-1">
+                  {parseList(row.images).map((url, i) => (
+                    <div
+                      key={`${url}-${i}`}
+                      className="relative h-16 w-16 rounded-sm overflow-hidden border border-border-custom bg-background"
+                    >
+                      <img
+                        src={url}
+                        alt={`Preview ${i + 1}`}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                        }}
+                      />
+                      <span className="hidden absolute inset-0 flex items-center justify-center text-center text-[9px] font-medium text-error bg-error/5 px-1 leading-tight">
+                        Broken link
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
