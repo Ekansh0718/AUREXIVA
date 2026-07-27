@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -34,6 +34,7 @@ export const Checkout: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const hasPlacedOrderRef = useRef(false)
   const {
     register,
     handleSubmit,
@@ -47,7 +48,7 @@ export const Checkout: React.FC = () => {
   const total = items.length > 0 ? subtotal + shipping : 0
 
   useEffect(() => {
-    if (items.length === 0) navigate('/cart', { replace: true })
+    if (items.length === 0 && !hasPlacedOrderRef.current) navigate('/cart', { replace: true })
   }, [items.length, navigate])
 
   const onSubmit = async (data: CheckoutFields) => {
@@ -66,6 +67,7 @@ export const Checkout: React.FC = () => {
 
       if (paymentMethod === 'cod') {
         await markOrderAsCashOnDelivery(order.id)
+        hasPlacedOrderRef.current = true
         await clearCart()
         navigate(`/order-confirmation/${order.id}`)
         return
