@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/((?!api/|assets/|favicon.ico|favicon.png|favicon-32.png|logo-mark.png|aurexiva-logo.png|icons.svg).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
