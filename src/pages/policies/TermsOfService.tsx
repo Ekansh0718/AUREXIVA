@@ -12,8 +12,8 @@ export const TermsOfService: React.FC = () => {
           <h2>1. Acceptance of terms</h2>
           <p>
             This website is operated by <strong className="text-primary">Aurexiva Product Private Limited</strong>
-            {' '}("AUREXIVA", "we", "us"). By creating an account or placing an order on this site, you agree to
-            these terms.
+            {' '}("AUREXIVA", "we", "us"), registered at Chainpur Mobarakpur, Siwan, Bihar 841203, India. By
+            creating an account or placing an order on this site, you agree to these terms.
           </p>
         </section>
 
@@ -74,8 +74,13 @@ export const TermsOfService: React.FC = () => {
           <h2>9. Contact us</h2>
           <p>
             For any questions about these terms, contact us at{' '}
-            <span className="text-primary font-medium">[insert support email before publishing]</span>.
+            <span className="text-primary font-medium">[insert support email before publishing]</span>, or by
+            post at:
           </p>
+          <address className="not-italic mt-2 text-primary font-medium leading-relaxed">
+            Aurexiva Product Private Limited<br />
+            Chainpur Mobarakpur, Siwan, Bihar 841203, India
+          </address>
         </section>
       </div>
     </Container>

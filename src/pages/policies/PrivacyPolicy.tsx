@@ -12,8 +12,9 @@ export const PrivacyPolicy: React.FC = () => {
           <h2>1. Who we are</h2>
           <p>
             This website is operated by <strong className="text-primary">Aurexiva Product Private Limited</strong>
-            {' '}("AUREXIVA", "we", "us"). This policy explains what personal data we collect when you use this
-            site, why we collect it, and how you can control it.
+            {' '}("AUREXIVA", "we", "us"), registered at Chainpur Mobarakpur, Siwan, Bihar 841203, India. This
+            policy explains what personal data we collect when you use this site, why we collect it, and how you
+            can control it.
           </p>
         </section>
 
@@ -60,8 +61,13 @@ export const PrivacyPolicy: React.FC = () => {
           <h2>6. Contact us</h2>
           <p>
             For any privacy questions, contact us at{' '}
-            <span className="text-primary font-medium">[insert support email before publishing]</span>.
+            <span className="text-primary font-medium">[insert support email before publishing]</span>, or by
+            post at:
           </p>
+          <address className="not-italic mt-2 text-primary font-medium leading-relaxed">
+            Aurexiva Product Private Limited<br />
+            Chainpur Mobarakpur, Siwan, Bihar 841203, India
+          </address>
         </section>
       </div>
     </Container>

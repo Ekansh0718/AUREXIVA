@@ -57,6 +57,9 @@ export const Footer: React.FC = () => {
               <p className="mt-5 text-[16px] text-white/70 max-w-xs leading-relaxed">
                 Everything you need. All in one place.
               </p>
+              <address className="mt-3 text-[14px] text-white/50 not-italic leading-relaxed">
+                Chainpur Mobarakpur, Siwan, Bihar 841203
+              </address>
             </div>
             {/* Social Icons */}
             <div className="flex items-center gap-4 mt-2">
