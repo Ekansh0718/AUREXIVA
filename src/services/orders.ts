@@ -150,6 +150,16 @@ export const updateOrderPaymentResult = async (
   if (error) throw error
 }
 
+/** Cash on Delivery orders never go through a payment provider at all — no
+ *  gateway, no callback. The order is placed immediately with
+ *  payment_status left `pending` (nothing has been paid yet) and
+ *  payment_method set to `cod` so Order History / Confirmation can show a
+ *  "Cash on Delivery" label instead of implying a failed online payment. */
+export const markOrderAsCashOnDelivery = async (orderId: string): Promise<void> => {
+  const { error } = await supabase.from('orders').update({ payment_method: 'cod' }).eq('id', orderId)
+  if (error) throw error
+}
+
 export const getOrder = async (orderId: string): Promise<OrderRecord | null> => {
   const { data: order, error: orderError } = await supabase
     .from('orders')

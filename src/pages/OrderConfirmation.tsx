@@ -38,6 +38,8 @@ export const OrderConfirmation: React.FC = () => {
     )
   }
 
+  const isCod = order.paymentMethod === 'cod'
+
   return (
     <Container className="py-16 sm:py-24 flex justify-center text-left">
       <div className="w-full max-w-lg border border-border-custom bg-white rounded-premium p-8 sm:p-10 flex flex-col gap-6">
@@ -45,7 +47,9 @@ export const OrderConfirmation: React.FC = () => {
           <CheckCircle2 className="h-12 w-12 text-success" />
           <h1 className="text-h2 font-medium tracking-tight text-primary">Order Confirmed</h1>
           <p className="text-sm text-secondary">
-            Thank you — your order has been placed and payment received.
+            {isCod
+              ? "Thank you — your order has been placed. Pay in cash when it's delivered."
+              : 'Thank you — your order has been placed and payment received.'}
           </p>
         </div>
 
@@ -54,13 +58,23 @@ export const OrderConfirmation: React.FC = () => {
             <span>Order ID</span>
             <span className="text-primary font-semibold">{order.id}</span>
           </div>
+          {!isCod && (
+            <div className="flex justify-between">
+              <span>Transaction ID</span>
+              <span className="text-primary font-semibold">{order.transactionId ?? '—'}</span>
+            </div>
+          )}
           <div className="flex justify-between">
-            <span>Transaction ID</span>
-            <span className="text-primary font-semibold">{order.transactionId ?? '—'}</span>
+            <span>Payment Method</span>
+            <span className="text-primary font-semibold">
+              {isCod ? 'Cash on Delivery' : order.paymentMethod || 'Online'}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>Payment Status</span>
-            <span className="text-success font-semibold capitalize">{order.paymentStatus}</span>
+            <span className={`font-semibold capitalize ${isCod ? 'text-accent' : 'text-success'}`}>
+              {isCod ? 'Due on Delivery' : order.paymentStatus}
+            </span>
           </div>
         </div>
 

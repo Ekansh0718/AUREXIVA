@@ -10,6 +10,9 @@ import { fetchUserOrders, type OrderRecord } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
 
 const statusBadge = (order: OrderRecord) => {
+  if (order.paymentMethod === 'cod' && order.status === 'pending') {
+    return <Badge variant="accent">Cash on Delivery</Badge>
+  }
   if (order.paymentStatus === 'failed') return <Badge variant="error">Payment Failed</Badge>
   if (order.paymentStatus === 'cancelled') return <Badge variant="secondary">Cancelled</Badge>
   if (order.paymentStatus === 'refunded') return <Badge variant="secondary">Refunded</Badge>

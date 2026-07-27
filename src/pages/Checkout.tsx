@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Banknote, CreditCard } from 'lucide-react'
 import { Container } from '@/components/common/Container'
 import { Input } from '@/components/ui/Input'
 import { PrimaryButton } from '@/components/ui/Button'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { usePayment } from '@/hooks/usePayment'
-import { createOrder } from '@/services/orders'
+import { createOrder, markOrderAsCashOnDelivery } from '@/services/orders'
 import { paymentConfig } from '@/services/payment/payment.config'
 import { formatPrice } from '@/utils/format'
 import { getErrorMessage } from '@/utils/errors'
+import { cn } from '@/utils/cn'
 
 const checkoutSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -27,8 +29,10 @@ type CheckoutFields = z.infer<typeof checkoutSchema>
 export const Checkout: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { items, subtotal } = useCart()
-  const { initiatePayment, isProcessing } = usePayment()
+  const { items, subtotal, clearCart } = useCart()
+  const { initiatePayment, isProcessing: isPaymentProcessing } = usePayment()
+  const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const {
     register,
@@ -49,6 +53,7 @@ export const Checkout: React.FC = () => {
   const onSubmit = async (data: CheckoutFields) => {
     if (!user) return
     setFormError(null)
+    setIsSubmitting(true)
 
     try {
       const order = await createOrder(
@@ -58,6 +63,13 @@ export const Checkout: React.FC = () => {
         subtotal,
         total
       )
+
+      if (paymentMethod === 'cod') {
+        await markOrderAsCashOnDelivery(order.id)
+        await clearCart()
+        navigate(`/order-confirmation/${order.id}`)
+        return
+      }
 
       const payment = await initiatePayment({
         orderId: order.id,
@@ -73,8 +85,12 @@ export const Checkout: React.FC = () => {
       navigate(payment.redirectUrl)
     } catch (err) {
       setFormError(getErrorMessage(err, 'Unable to start checkout. Please try again.'))
+    } finally {
+      setIsSubmitting(false)
     }
   }
+
+  const isBusy = isSubmitting || isPaymentProcessing
 
   if (items.length === 0) return null
 
@@ -103,7 +119,7 @@ export const Checkout: React.FC = () => {
               type="email"
               placeholder="name@example.com"
               error={errors.email?.message}
-              disabled={isProcessing}
+              disabled={isBusy}
               {...register('email')}
             />
           </section>
@@ -118,14 +134,14 @@ export const Checkout: React.FC = () => {
                 label="Full Name"
                 placeholder="John Doe"
                 error={errors.name?.message}
-                disabled={isProcessing}
+                disabled={isBusy}
                 {...register('name')}
               />
               <Input
                 label="Street Address"
                 placeholder="100 Vercel Way"
                 error={errors.address?.message}
-                disabled={isProcessing}
+                disabled={isBusy}
                 {...register('address')}
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -133,29 +149,77 @@ export const Checkout: React.FC = () => {
                   label="City"
                   placeholder="San Francisco"
                   error={errors.city?.message}
-                  disabled={isProcessing}
+                  disabled={isBusy}
                   {...register('city')}
                 />
                 <Input
                   label="ZIP Code"
                   placeholder="94107"
                   error={errors.zip?.message}
-                  disabled={isProcessing}
+                  disabled={isBusy}
                   {...register('zip')}
                 />
               </div>
             </div>
           </section>
 
-          {/* Payment */}
+          {/* Payment Method */}
           <section className="bg-white border border-border-custom p-6 sm:p-8 rounded-premium hover:shadow-premium transition-all duration-300">
             <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-6 select-none">
-              Payment
+              Payment Method
             </h3>
-            <p className="text-xs text-secondary leading-relaxed">
-              You'll enter your payment details on the next screen, hosted securely by our payment
-              provider — no card information is collected or stored on this page.
-            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('online')}
+                disabled={isBusy}
+                className={cn(
+                  'w-full flex items-start gap-4 text-left border rounded-premium p-4 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60',
+                  paymentMethod === 'online' ? 'border-primary bg-background' : 'border-border-custom hover:border-secondary'
+                )}
+              >
+                <span
+                  className={cn(
+                    'mt-0.5 h-4 w-4 shrink-0 rounded-full border flex items-center justify-center',
+                    paymentMethod === 'online' ? 'border-primary' : 'border-border-custom'
+                  )}
+                >
+                  {paymentMethod === 'online' && <span className="h-2 w-2 rounded-full bg-primary" />}
+                </span>
+                <CreditCard className="h-5 w-5 text-primary shrink-0" />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-sm font-semibold text-primary">Pay Online</span>
+                  <span className="text-xs text-secondary">
+                    UPI, Cards, Netbanking, and Wallets — hosted securely by our payment provider. No card
+                    details are collected or stored on this page.
+                  </span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('cod')}
+                disabled={isBusy}
+                className={cn(
+                  'w-full flex items-start gap-4 text-left border rounded-premium p-4 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60',
+                  paymentMethod === 'cod' ? 'border-primary bg-background' : 'border-border-custom hover:border-secondary'
+                )}
+              >
+                <span
+                  className={cn(
+                    'mt-0.5 h-4 w-4 shrink-0 rounded-full border flex items-center justify-center',
+                    paymentMethod === 'cod' ? 'border-primary' : 'border-border-custom'
+                  )}
+                >
+                  {paymentMethod === 'cod' && <span className="h-2 w-2 rounded-full bg-primary" />}
+                </span>
+                <Banknote className="h-5 w-5 text-primary shrink-0" />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-sm font-semibold text-primary">Cash on Delivery</span>
+                  <span className="text-xs text-secondary">Pay in cash when your order is delivered.</span>
+                </span>
+              </button>
+            </div>
           </section>
         </div>
 
@@ -197,10 +261,10 @@ export const Checkout: React.FC = () => {
 
           <PrimaryButton
             type="submit"
-            isLoading={isProcessing}
+            isLoading={isBusy}
             className="w-full mt-8"
           >
-            Continue to Payment
+            {paymentMethod === 'cod' ? 'Place Order' : 'Continue to Payment'}
           </PrimaryButton>
         </div>
       </form>
