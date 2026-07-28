@@ -24,7 +24,8 @@ export const PaymentCallback: React.FC = () => {
 
   const orderId = searchParams.get('order_id')
   const status = searchParams.get('status') ?? 'failed'
-  const gatewayReference = searchParams.get('ref') ?? undefined
+  const gatewayReference = searchParams.get('ref') ?? searchParams.get('razorpay_order_id') ?? undefined
+  const transactionId = searchParams.get('razorpay_payment_id') ?? undefined
 
   useEffect(() => {
     if (hasRun.current || !orderId) return
@@ -32,7 +33,17 @@ export const PaymentCallback: React.FC = () => {
 
     const run = async () => {
       try {
-        const input = { orderId, gatewayReference, payload: { status } }
+        // Forward every gateway-specific field present in the URL — the
+        // active provider picks out whatever it needs (e.g. Razorpay reads
+        // razorpay_payment_id/order_id/signature to verify the signature;
+        // the mock provider only looks at `status`).
+        const payload: Record<string, string> = { status }
+        for (const key of ['razorpay_payment_id', 'razorpay_order_id', 'razorpay_signature']) {
+          const value = searchParams.get(key)
+          if (value) payload[key] = value
+        }
+
+        const input = { orderId, gatewayReference, transactionId, payload }
         const result =
           status === 'success'
             ? await paymentService.handleSuccess(input)

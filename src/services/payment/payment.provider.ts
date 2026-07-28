@@ -2,6 +2,7 @@ import { paymentConfig } from './payment.config'
 import type { IPaymentProvider } from './payment.types'
 import { MockPaymentProvider } from './providers/mock.provider'
 import { BankPaymentProvider } from './providers/bank.provider'
+import { RazorpayPaymentProvider } from './providers/razorpay.provider'
 
 /**
  * The single place that decides which IPaymentProvider implementation is
@@ -9,9 +10,11 @@ import { BankPaymentProvider } from './providers/bank.provider'
  * through `paymentService` (payment.service.ts), which calls this factory —
  * nothing else should import a concrete provider class directly.
  *
- * Switching from the mock provider to the bank's real integration is a
- * one-line env change (`VITE_PAYMENT_PROVIDER=bank`) once bank.provider.ts
- * is filled in — no changes needed here.
+ * Switching providers is a one-line env change:
+ *   VITE_PAYMENT_PROVIDER=razorpay  — real Razorpay checkout
+ *   VITE_PAYMENT_PROVIDER=bank      — the client's bank API, once implemented
+ *   VITE_PAYMENT_PROVIDER=mock      — simulated gateway, no external dependency
+ * No changes needed here to switch.
  */
 let cachedProvider: IPaymentProvider | null = null
 
@@ -19,6 +22,9 @@ export const getPaymentProvider = (): IPaymentProvider => {
   if (cachedProvider) return cachedProvider
 
   switch (paymentConfig.provider) {
+    case 'razorpay':
+      cachedProvider = new RazorpayPaymentProvider()
+      break
     case 'bank':
       cachedProvider = new BankPaymentProvider()
       break

@@ -9,13 +9,15 @@
  * public: a merchant/store ID, a *publishable* API key, gateway/redirect
  * URLs. It must NEVER hold a secret key or webhook signing secret.
  *
- * The bank's secret key and webhook secret belong in Supabase Edge Function
- * secrets (`supabase secrets set BANK_SECRET_KEY=...`), read there via
- * `Deno.env.get(...)` — see supabase/functions/payment-webhook. That
- * function is the only place those values may ever be read.
+ * Secret keys and webhook secrets (Razorpay's Key Secret, Webhook Secret;
+ * or the bank's equivalents) belong in Supabase Edge Function secrets
+ * (`supabase secrets set RAZORPAY_KEY_SECRET=...`), read there via
+ * `Deno.env.get(...)` — see supabase/functions/create-payment-order,
+ * verify-payment, and payment-webhook. Those functions are the only place
+ * those values may ever be read.
  */
 
-export type PaymentProviderName = 'mock' | 'bank'
+export type PaymentProviderName = 'mock' | 'bank' | 'razorpay'
 export type PaymentEnvironment = 'sandbox' | 'production'
 
 export interface PaymentConfig {
@@ -72,3 +74,7 @@ export const paymentConfig: PaymentConfig = {
 
 export const isBankProviderConfigured = (): boolean =>
   Boolean(paymentConfig.merchantId && paymentConfig.publicApiKey && paymentConfig.gatewayUrl)
+
+/** Razorpay only needs the publishable Key ID client-side — the Key Secret
+ *  lives in Supabase Edge Function secrets and is checked there instead. */
+export const isRazorpayConfigured = (): boolean => Boolean(paymentConfig.publicApiKey)
