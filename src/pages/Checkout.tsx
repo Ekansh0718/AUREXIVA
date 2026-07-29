@@ -29,7 +29,7 @@ type CheckoutFields = z.infer<typeof checkoutSchema>
 export const Checkout: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { items, subtotal, clearCart } = useCart()
+  const { items, subtotal, clearCart, isLoading: isCartLoading } = useCart()
   const { initiatePayment, isProcessing: isPaymentProcessing } = usePayment()
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -48,8 +48,8 @@ export const Checkout: React.FC = () => {
   const total = items.length > 0 ? subtotal + shipping : 0
 
   useEffect(() => {
-    if (items.length === 0 && !hasPlacedOrderRef.current) navigate('/cart', { replace: true })
-  }, [items.length, navigate])
+    if (!isCartLoading && items.length === 0 && !hasPlacedOrderRef.current) navigate('/cart', { replace: true })
+  }, [isCartLoading, items.length, navigate])
 
   const onSubmit = async (data: CheckoutFields) => {
     if (!user) return
@@ -94,7 +94,7 @@ export const Checkout: React.FC = () => {
 
   const isBusy = isSubmitting || isPaymentProcessing
 
-  if (items.length === 0) return null
+  if (isCartLoading || items.length === 0) return null
 
   return (
     <Container className="py-12 sm:py-16 text-left">

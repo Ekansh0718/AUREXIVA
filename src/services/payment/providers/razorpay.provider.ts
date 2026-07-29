@@ -28,6 +28,66 @@ interface VerifyPaymentResponse {
   error?: string
 }
 
+interface RazorpaySuccessResponse {
+  razorpay_payment_id: string
+  razorpay_order_id: string
+  razorpay_signature: string
+}
+
+interface RazorpayOptions {
+  key: string
+  amount: number
+  currency: string
+  name: string
+  description: string
+  order_id: string
+  prefill: { name: string; email: string }
+  theme: { color: string }
+  handler: (response: RazorpaySuccessResponse) => void
+  modal: { ondismiss: () => void }
+}
+
+interface RazorpayInstance {
+  open: () => void
+  on: (event: 'payment.failed', handler: (response: unknown) => void) => void
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => RazorpayInstance
+  }
+}
+
+const RAZORPAY_SCRIPT_SRC = 'https://checkout.razorpay.com/v1/checkout.js'
+
+let scriptPromise: Promise<boolean> | null = null
+
+const loadRazorpayScript = (): Promise<boolean> => {
+  if (window.Razorpay) return Promise.resolve(true)
+  if (scriptPromise) return scriptPromise
+
+  scriptPromise = new Promise((resolve) => {
+    const existing = document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`)
+    if (existing) {
+      existing.addEventListener('load', () => resolve(true))
+      existing.addEventListener('error', () => resolve(false))
+      return
+    }
+    const script = document.createElement('script')
+    script.src = RAZORPAY_SCRIPT_SRC
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+
+  return scriptPromise
+}
+
+type ModalOutcome =
+  | { status: 'success'; payload: Record<string, string> }
+  | { status: 'cancelled'; payload: Record<string, string> }
+  | { status: 'failed'; payload: Record<string, string> }
+
 /**
  * Real Razorpay integration. The only things this class needs to work are
  * the two env vars documented in payment.config.ts (VITE_PAYMENT_PROVIDER=
@@ -39,6 +99,15 @@ interface VerifyPaymentResponse {
  * signature verification both happen in Supabase Edge Functions
  * (supabase/functions/create-payment-order, verify-payment) — this class
  * only calls those functions and shapes their responses to IPaymentProvider.
+ *
+ * The checkout modal is opened here, synchronously within the same call
+ * chain as the "Continue to Payment" click (Checkout.tsx's onSubmit calls
+ * initializePayment directly) — Razorpay's own reference integration always
+ * opens the modal on the same page, in direct response to the triggering
+ * user gesture, rather than after a route change to a separate page. Opening
+ * it later, on a freshly-navigated page after an async script load, is
+ * unreliable — the modal can silently fail to reveal itself with no error
+ * surfaced anywhere.
  */
 export class RazorpayPaymentProvider implements IPaymentProvider {
   readonly name = 'razorpay'
@@ -60,17 +129,51 @@ export class RazorpayPaymentProvider implements IPaymentProvider {
     if (error) throw error
     if (!data || data.error) throw new Error(data?.error ?? 'Unable to create Razorpay order.')
 
-    const params = new URLSearchParams({
-      razorpay_order_id: data.razorpayOrderId,
-      amount: String(data.amount),
-      currency: data.currency,
-      key: data.keyId,
-      name: input.customerName,
-      email: input.customerEmail,
+    const loaded = await loadRazorpayScript()
+    if (!loaded || !window.Razorpay) {
+      throw new Error("Couldn't load the payment window. Check your connection and try again.")
+    }
+
+    const outcome = await new Promise<ModalOutcome>((resolve, reject) => {
+      try {
+        const rzp = new window.Razorpay!({
+          key: data.keyId,
+          amount: data.amount,
+          currency: data.currency,
+          name: 'AUREXIVA',
+          description: `Order ${input.orderId}`,
+          order_id: data.razorpayOrderId,
+          prefill: { name: input.customerName, email: input.customerEmail },
+          theme: { color: '#111111' },
+          handler: (response) => {
+            resolve({
+              status: 'success',
+              payload: {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+            })
+          },
+          modal: {
+            ondismiss: () => resolve({ status: 'cancelled', payload: {} }),
+          },
+        })
+
+        rzp.on('payment.failed', () => resolve({ status: 'failed', payload: {} }))
+        rzp.open()
+      } catch (err) {
+        reject(err)
+      }
     })
 
+    // Route through the same /payment/callback flow every provider uses —
+    // Checkout.tsx just does navigate(redirectUrl), and PaymentCallback.tsx
+    // already knows how to read these Razorpay-specific query params.
+    const params = new URLSearchParams({ order_id: input.orderId, status: outcome.status, ...outcome.payload })
+
     return {
-      redirectUrl: `/payment/razorpay/${input.orderId}?${params.toString()}`,
+      redirectUrl: `/payment/callback?${params.toString()}`,
       gatewayReference: data.razorpayOrderId,
     }
   }

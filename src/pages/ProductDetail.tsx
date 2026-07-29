@@ -9,12 +9,18 @@ import { ProductCard } from '@/components/product/ProductCard'
 import { useProduct, useRelatedProducts } from '@/hooks/useCatalog'
 import { useCart } from '@/context/CartContext'
 import { formatPrice } from '@/utils/format'
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 export const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const { data: product, isLoading, isFetched } = useProduct(slug)
   const { data: relatedProducts = [] } = useRelatedProducts(product?.categoryId, product?.id)
   const { addItem } = useCart()
+
+  usePageMeta(
+    product?.name ?? 'Product',
+    product ? `${product.name} — ${formatPrice(product.price)}. ${product.description ?? ''}`.trim() : undefined
+  )
 
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')

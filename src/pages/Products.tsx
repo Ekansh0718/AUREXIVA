@@ -6,6 +6,7 @@ import { ProductCard } from '@/components/product/ProductCard'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { useCategories, useProducts } from '@/hooks/useCatalog'
+import { usePageMeta } from '@/hooks/usePageMeta'
 import { motion, AnimatePresence } from 'framer-motion'
 import { staggerContainer, fadeUp } from '@/utils/animations'
 
@@ -20,6 +21,14 @@ export const Products: React.FC = () => {
     categorySlug: categoryFilter || undefined,
     search: searchFilter || undefined,
   })
+
+  const categoryLabel = categories.find((c) => c.slug === categoryFilter)?.name
+  usePageMeta(
+    categoryLabel ? `Shop ${categoryLabel}` : searchFilter ? `Search: ${searchFilter}` : 'Shop All Products',
+    categoryLabel
+      ? `Explore Aurexiva's ${categoryLabel.toLowerCase()} collection — handcrafted quality, secure checkout, fast dispatch.`
+      : undefined
+  )
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value

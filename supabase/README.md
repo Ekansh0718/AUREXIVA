@@ -93,6 +93,8 @@ VITE_PAYMENT_PUBLIC_KEY=rzp_live_xxxxxxxxxxxx
 ```
 (Same Key ID in both — `VITE_PAYMENT_PUBLIC_KEY` is the one actually used by `RazorpayPaymentProvider`.)
 
+**In Vercel specifically**, scope the live (`rzp_live_...`) values to the **Production** environment only, and leave **Preview** deployments on the test (`rzp_test_...`) values. Preview URLs get shared casually (client review links, PR previews) — keeping them on test keys means a stray link never lets anyone trigger a real charge. Set both sets of values under Project Settings → Environment Variables, each scoped to the right environment.
+
 **That's it.** No other application code changes — `src/services/payment/providers/razorpay.provider.ts` and the Edge Functions handle everything: order creation, opening Razorpay's real checkout modal, cryptographic signature verification, and the webhook as a durable backup. See the architecture comments at the top of `razorpay.provider.ts` and each function under `functions/` for how the pieces fit together.
 
 **Test mode first:** use your `rzp_test_...` Key ID/Secret and Razorpay's [test card numbers](https://razorpay.com/docs/payments/payments/test-card-upi-details/) to run through a full checkout before switching to live keys.

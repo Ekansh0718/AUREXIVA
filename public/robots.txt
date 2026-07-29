@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /internal/
+Disallow: /payment/
+Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /order-confirmation/
+
+Sitemap: https://www.aurexiva.in/sitemap.xml

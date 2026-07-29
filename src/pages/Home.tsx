@@ -17,9 +17,15 @@ import { ProductCard } from '@/components/product/ProductCard'
 import { PrimaryButton, SecondaryButton } from '@/components/ui/Button'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { useCategories, useBestSellers } from '@/hooks/useCatalog'
+import { usePageMeta } from '@/hooks/usePageMeta'
 import { fadeIn, fadeUp, staggerContainer } from '@/utils/animations'
 
 export const Home: React.FC = () => {
+  usePageMeta(
+    'Luxury Footwear, Clothing & Electronics',
+    'Shop handcrafted luxury footwear, organic clothing, and premium electronics at Aurexiva. Secure checkout, fast dispatch, easy returns.'
+  )
+
   const [activeSlide, setActiveSlide] = useState(0)
 
   // Carousel slider state for Best Sellers (mock scrolling / offset)

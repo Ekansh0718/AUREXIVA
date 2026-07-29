@@ -12,7 +12,6 @@ import { Profile } from '@/pages/Profile'
 import { Orders } from '@/pages/Orders'
 import { Checkout } from '@/pages/Checkout'
 import { MockPaymentGateway } from '@/pages/payment/MockPaymentGateway'
-import { RazorpayCheckout } from '@/pages/payment/RazorpayCheckout'
 import { PaymentCallback } from '@/pages/payment/PaymentCallback'
 import { OrderConfirmation } from '@/pages/OrderConfirmation'
 import { PrivacyPolicy } from '@/pages/policies/PrivacyPolicy'
@@ -20,6 +19,7 @@ import { TermsOfService } from '@/pages/policies/TermsOfService'
 import { AddProducts } from '@/pages/internal/AddProducts'
 import { NotFound } from '@/pages/NotFound'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { AdminRoute } from '@/components/auth/AdminRoute'
 
 export const router = createBrowserRouter([
   {
@@ -79,9 +79,9 @@ export const router = createBrowserRouter([
       {
         path: 'internal/add-products',
         element: (
-          <ProtectedRoute>
+          <AdminRoute>
             <AddProducts />
-          </ProtectedRoute>
+          </AdminRoute>
         ),
       },
       { path: '*', element: <NotFound /> },
@@ -94,15 +94,6 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <MockPaymentGateway />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    // Also outside AppLayout — this is where Razorpay's checkout modal opens.
-    path: '/payment/razorpay/:orderId',
-    element: (
-      <ProtectedRoute>
-        <RazorpayCheckout />
       </ProtectedRoute>
     ),
   },
