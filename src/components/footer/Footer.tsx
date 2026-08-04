@@ -41,6 +41,10 @@ export const Footer: React.FC = () => {
 
   const customerServiceLinks = [
     { label: 'Track Order', href: '/orders' },
+    { label: 'Shipping Policy', href: '/policies/shipping' },
+    { label: 'Return & Refund Policy', href: '/policies/returns' },
+    { label: 'Contact Us', href: '/contact' },
+    { label: 'About Us', href: '/about' },
   ]
 
   return (
@@ -58,7 +62,8 @@ export const Footer: React.FC = () => {
                 Everything you need. All in one place.
               </p>
               <address className="mt-3 text-[14px] text-white/50 not-italic leading-relaxed">
-                Chainpur Mobarakpur, Siwan, Bihar 841203
+                Chainpur Mobarakpur, Siwan, Bihar 841203<br />
+                GSTIN: 10ABFCA8055J1ZS
               </address>
             </div>
             {/* Social Icons */}

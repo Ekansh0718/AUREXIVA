@@ -64,6 +64,7 @@ export const ProductDetail: React.FC = () => {
   const sizes = product.variants
   const colors = product.colors
   const galleryImages = product.images.length > 0 ? product.images : [product.image]
+  const isNonReturnableCategory = product.categorySlug === 'footwear' || product.categorySlug === 'clothing'
 
   const goToImage = (index: number) => {
     setActiveImageIndex((index + galleryImages.length) % galleryImages.length)
@@ -245,12 +246,18 @@ export const ProductDetail: React.FC = () => {
             <div className="flex flex-col gap-2">
               <Truck className="h-5 w-5 text-primary/75" />
               <span className="font-bold text-primary">Free Shipping</span>
-              <span>On all orders above ₹999. Courier dispatch.</span>
+              <span>On all orders above ₹800. Courier dispatch.</span>
             </div>
             <div className="flex flex-col gap-2">
               <RefreshCw className="h-5 w-5 text-primary/75" />
-              <span className="font-bold text-primary">Easy Returns</span>
-              <span>14-day hassle-free return and exchange policy.</span>
+              <span className="font-bold text-primary">
+                {isNonReturnableCategory ? 'Final Sale' : 'Easy Returns'}
+              </span>
+              <span>
+                {isNonReturnableCategory
+                  ? 'Footwear and clothing are non-returnable.'
+                  : '5-day hassle-free return policy.'}
+              </span>
             </div>
             <div className="flex flex-col gap-2">
               <ShieldCheck className="h-5 w-5 text-primary/75" />

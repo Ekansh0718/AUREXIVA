@@ -44,7 +44,7 @@ export const Checkout: React.FC = () => {
     defaultValues: { email: user?.email ?? '' },
   })
 
-  const shipping = subtotal > 999 ? 0 : 99
+  const shipping = subtotal > 800 ? 0 : 99
   const total = items.length > 0 ? subtotal + shipping : 0
 
   useEffect(() => {

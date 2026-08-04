@@ -173,7 +173,7 @@ export const Home: React.FC = () => {
                   Free Shipping
                 </span>
                 <span className="text-[14px] text-secondary font-medium mt-1">
-                  On orders over ₹999
+                  On orders over ₹800
                 </span>
               </div>
             </div>
@@ -199,7 +199,7 @@ export const Home: React.FC = () => {
                   Easy Returns
                 </span>
                 <span className="text-[14px] text-secondary font-medium mt-1">
-                  30-day return policy
+                  5-day return policy
                 </span>
               </div>
             </div>

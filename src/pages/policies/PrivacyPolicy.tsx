@@ -5,7 +5,7 @@ import { SectionTitle } from '@/components/common/SectionTitle'
 export const PrivacyPolicy: React.FC = () => {
   return (
     <Container className="py-12 sm:py-16 text-left max-w-3xl">
-      <SectionTitle title="Privacy Policy" subtitle="Last updated: [insert date before publishing]" />
+      <SectionTitle title="Privacy Policy" subtitle="Last updated: July 30, 2026" />
 
       <div className="mt-8 flex flex-col gap-8 text-sm text-secondary leading-relaxed [&_h2]:text-body [&_h2]:font-semibold [&_h2]:text-primary [&_h2]:mb-2">
         <section>
@@ -61,8 +61,10 @@ export const PrivacyPolicy: React.FC = () => {
           <h2>6. Contact us</h2>
           <p>
             For any privacy questions, contact us at{' '}
-            <span className="text-primary font-medium">[insert support email before publishing]</span>, or by
-            post at:
+            <a href="mailto:costomercareaurexiva@gmail.com" className="text-primary font-medium underline">
+              costomercareaurexiva@gmail.com
+            </a>
+            , or by post at:
           </p>
           <address className="not-italic mt-2 text-primary font-medium leading-relaxed">
             Aurexiva Product Private Limited<br />
